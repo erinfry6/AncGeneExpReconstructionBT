@@ -64,8 +64,8 @@ AddMRCA Node-01 1 2 3 4 6 7 8 9 10 11 12 13 14 15
 AddMRCA Node-02 1 2 3 4 6
 Burnin 10000
 stones 100 10000' >> ${pathCommands}/delta$scriptversion.txt
-echo LoadModels ${pathTemporary}/model$scriptversion.bin >> ${pathCommands}/delta$scriptversion.txt
-echo run >> ${pathCommands}/delta$scriptversion.txt
+	echo LoadModels ${pathTemporary}/model$scriptversion.bin >> ${pathCommands}/delta$scriptversion.txt
+	echo run >> ${pathCommands}/delta$scriptversion.txt
 
 	echo 'Kappa
 Iterations 1010000
@@ -73,8 +73,8 @@ AddMRCA Node-01 1 2 3 4 6 7 8 9 10 11 12 13 14 15
 AddMRCA Node-02 1 2 3 4 6
 Burnin 10000
 stones 100 10000' >> ${pathCommands}/kappa$scriptversion.txt
-echo LoadModels ${pathTemporary}/model$scriptversion.bin >> ${pathCommands}/kappa$scriptversion.txt
-echo run >> ${pathCommands}/kappa$scriptversion.txt
+	echo LoadModels ${pathTemporary}/model$scriptversion.bin >> ${pathCommands}/kappa$scriptversion.txt
+	echo run >> ${pathCommands}/kappa$scriptversion.txt
 
 	echo 'Delta
 	Kappa
@@ -83,16 +83,16 @@ AddMRCA Node-01 1 2 3 4 6 7 8 9 10 11 12 13 14 15
 AddMRCA Node-02 1 2 3 4 6
 Burnin 10000
 stones 100 10000' >> ${pathCommands}/kappadelta$scriptversion.txt
-echo LoadModels ${pathTemporary}/model$scriptversion.bin >> ${pathCommands}/kappadelta$scriptversion.txt
-echo run >> ${pathCommands}/kappadelta$scriptversion.txt
+	echo LoadModels ${pathTemporary}/model$scriptversion.bin >> ${pathCommands}/kappadelta$scriptversion.txt
+	echo run >> ${pathCommands}/kappadelta$scriptversion.txt
 
 echo 'Iterations 1010000
 AddMRCA Node-01 1 2 3 4 6 7 8 9 10 11 12 13 14 15
 AddMRCA Node-02 1 2 3 4 6
 Burnin 10000
 stones 100 10000' >> ${pathCommands}/none$scriptversion.txt
-echo LoadModels ${pathTemporary}/model$scriptversion.bin >> ${pathCommands}/none$scriptversion.txt
-echo run >> ${pathCommands}/none$scriptversion.txt
+	echo LoadModels ${pathTemporary}/model$scriptversion.bin >> ${pathCommands}/none$scriptversion.txt
+	echo run >> ${pathCommands}/none$scriptversion.txt
 
 
 ###########################################################
@@ -113,24 +113,24 @@ for a in {2..15}
 	awk -v a="$a" '{print $1,$a}' ${pathData}/${Expressiondata} > ${expData}
 
 
-if [[ $choice == 4 ]]; then
+	if [[ $choice == 4 ]]; then
 	cp ${pathResults}/gene$a/kappadeltaModel.bin ${pathTemporary}/model$scriptversion.bin
 	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/kappadelta$scriptversion.txt | awk 'NR >=82' > ${pathRecon}/gene$a.txt
 
-elif [[ $choice == 3 ]]; then
+	elif [[ $choice == 3 ]]; then
 	cp ${pathResults}/gene$a/noneModel.bin ${pathTemporary}/model$scriptversion.bin
 	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/none$scriptversion.txt | awk 'NR >=82' > ${pathRecon}/gene$a.txt
 
 
-elif [[ $choice == 2 ]]; then
+	elif [[ $choice == 2 ]]; then
 	cp ${pathResults}/gene$a/kappaModel.bin ${pathTemporary}/model$scriptversion.bin
 	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/kappa$scriptversion.txt | awk 'NR >=82' > ${pathRecon}/gene$a.txt
 
 
-#or else its delta
-else 
+	#or else its delta
+	else 
 	cp ${pathResults}/gene$a/deltaModel.bin ${pathTemporary}/model$scriptversion.bin
 	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/delta$scriptversion.txt | awk 'NR >=82' > ${pathRecon}/gene$a.txt
 
-fi
-done
+	fi
+	done

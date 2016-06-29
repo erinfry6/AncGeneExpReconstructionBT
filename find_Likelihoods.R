@@ -1,6 +1,6 @@
 ## this script identifies the best model parameters to include in analyzing the evolution of gene expression by finding the likelihood of each model and choosing the highest
 ## created by Erin Fry (efry@uchicago.edu)
-## User should have R installed
+## User should have R installed (brew install R)
 ## Non-indented lines should be evaluated for modification speficic to user's purpose
 
 
