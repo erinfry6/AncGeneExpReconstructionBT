@@ -1,0 +1,11 @@
+4
+2
+Delta
+	Kappa
+Iterations 1010000
+AddMRCA Node-01 1 2 3 4 6 7 8 9 10 11 12 13 14 15
+AddMRCA Node-02 1 2 3 4 6
+Burnin 10000
+stones 100 10000
+LoadModels /Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutive/BTReconstruct/results/temporary/model1.bin
+run
