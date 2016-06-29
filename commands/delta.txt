@@ -1,8 +1,0 @@
-4
-2
-Delta
-Iterations 1010000
-Burnin 10000
-stones 100 10000
-SaveModels /Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutive/BTReconstruct/results/temporary/Model1.bin
-run
