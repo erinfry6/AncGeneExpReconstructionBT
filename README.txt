@@ -15,4 +15,9 @@ you will need to manually change each of the four command file writing scripts.
 2) find_best_model.sh - this script collects the likelihoods from the first step and identifies which model best fits the trait's evolution using the find_Likelihoods.R script
 No input necessary, but be sure to change the local path and the paths in the find_Likelihoods.R file!!!
 
-3) ancestral_reconstruction.sh - 
+3) ancestral_reconstruction.sh - runs the MCMC chain again, but this time only given the best model for the trait's evolution
+The chain will also calculate the posterior probably distribution of the reconstructing ancestral states for the desired ancestral nodes
+Make sure to change this part of the code in the command file section to whatever node you would like. See BayesTraits Manual.
+You will need the same 4 inputs from the first step to be located in the data folder, as well as the newly created modelchoice.txt file.
+
+

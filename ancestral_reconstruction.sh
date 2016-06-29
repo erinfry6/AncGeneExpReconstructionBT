@@ -99,7 +99,11 @@ echo run >> ${pathCommands}/none$scriptversion.txt
 
 ## for loop goes through each of the genes specified in { .. }
 
-	## first, makes a temporary file to contain only gene expression from the one gene, then creates the directory for that gene
+	## first, specify which model should be used for each gene
+	## make a temporary file to contain only gene expression from the one gene, then creates the directory for that gene
+	
+	## then, depending on which model, copy the model file created in the first step and run BayesTraits again, informed by the model file to
+	## reconstruct ancestral transcriptional state
 
 for a in {2..15}
 	do
