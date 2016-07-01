@@ -2,14 +2,19 @@
 ## User should have R installed (brew install R)
 ## Non-indented lines should be evaluated for modification speficic to user's purpose
 
+#################################################################
 
-###########################################################
+path="/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutive/BTReconstruct/"
+pathAncRecon=paste(path,"results/AncRecon/",sep="")
+pathData=paste(path,"data/",sep="")
+
+#################################################################
 
 ## Examine the MRCA posterior probability distributions after running BayesTraits again with the best parameter file. 
 ## Find the genes with low overlap between the two distributions
 
 ## set working directory that contains MCMC chain output for ancestral reconstruction
-setwd("/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutive/BTReconstruct/results/AncRecon")
+setwd(pathAncRecon)
 	ldf <- list() # creates a list
 	listcsv<-paste("gene",as.character((order(dir(pattern = "*.txt")))),".txt", sep="")
 
@@ -60,6 +65,6 @@ DistDiv<-function(dist1,dist2,nbin=100) {
 
 
 ## save the divergence perecentage for each gene
-setwd("/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutive/BTReconstruct/data")
+setwd(pathData)
 
 write.table(percent.divergent,"16-04-28percentdivergence.txt",sep='\t', row.names=FALSE, col.names=FALSE)

@@ -3,14 +3,19 @@
 ## User should have R installed (brew install R)
 ## Non-indented lines should be evaluated for modification speficic to user's purpose
 
+#################################################################
 
-###########################################################
+path="/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutive/BTReconstruct/"
+pathResults=paste(path,"results/",sep="")
+pathData=paste(path,"data/",sep="")
+
+#################################################################
 
 
 #collect the likelihood of the stepping stone sampler for each model for each gene
 
 ##first for model including the delta evolutionary rate parameter
-setwd("/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutive/BTReconstruct/results/modelDelta")
+setwd(paste(pathResults,"modelDelta/",sep=""))
 options(stringsAsFactors = FALSE)
 
 ldf <- list() # creates a list
@@ -25,7 +30,7 @@ for (i in 1:length(listcsv)){
 }
 
 #now for the kappa model
-setwd("/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutive/BTReconstruct/results/modelKappa")
+setwd(paste(pathResults,"modelKappa",sep=""))
 ldf <- list() # creates a list
 listcsv<-paste("gene",as.character((order(dir(pattern = "*.txt")))),".txt", sep="") # creates the list of all the csv files in the directory in true (not computer) numerical order
 for (k in 1:length(listcsv)){ 
@@ -38,7 +43,7 @@ for (i in 1:length(ldf)){
 }
 
 #now for the model with no evo rate parameters
-setwd("/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutive/BTReconstruct/results/modelNone")
+setwd(paste(pathResults,"modelNone",sep=""))
 ldf <- list() # creates a list
 listcsv<-paste("gene",as.character((order(dir(pattern = "*.txt")))),".txt", sep="") # creates the list of all the csv files in the directory in true (not computer) numerical order
 for (k in 1:length(listcsv)){ 
@@ -51,7 +56,7 @@ for (i in 1:length(ldf)){
 }
 
 #lastly, for the model with both kappa and delta
-setwd("/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutive/BTReconstruct/results/modelKappaDelta")
+setwd(paste(pathResults,"modelKappaDelta",sep=""))
 ldf <- list() # creates a list
 listcsv<-paste("gene",as.character((order(dir(pattern = "*.txt")))),".txt", sep="") # creates the list of all the csv files in the directory in true (not computer) numerical order
 for (k in 1:length(listcsv)){ 
@@ -92,7 +97,7 @@ head(steppingstonevals)
 
 ## First, create a file to indicate which model to use during ancestral reconstruction
 
-setwd("/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutive/BTReconstruct/data")
+setwd(pathData)
 write.table(t(choicess), "modelchoice.txt", sep= "\t",row.names=FALSE, col.names=FALSE)
 
 ## then just save the data you have so far 

@@ -20,7 +20,7 @@ The output will be in home/results.
 you will need to manually change each of the four command file writing scripts.
 
 2) find_best_model.sh - this script collects the likelihoods from the first step and identifies which model best fits the trait's evolution using the find_Likelihoods.R script
-No input necessary, but be sure to change the local path in the .sh file and the paths in the find_Likelihoods.R file!!!
+No input necessary, but be sure to change the local path at the top of the .sh file and find_Likelihoods.R scripts!
 
 3) ancestral_reconstruction.sh - runs the MCMC chain again, but this time only given the best model for the trait's evolution
 The chain will also calculate the posterior probably distribution of the reconstructing ancestral states for the desired ancestral nodes
@@ -30,7 +30,7 @@ You will need the same 4 inputs from the first step to be located in the data fo
 in the command line looks like$ ./ancestral_reconstruction.sh RPKM_Expression_Data.txt MyTree.tree 4 2
 
 4) ID_divergent_genes.sh - if you would like to calculate the percent divergence between the two posterior probability distributions of two ancestral states,
-	this file will be useful. It runs the R code Ancestral_Analysis.R. You'll need both R and the package dplyr.
+	this file will be useful. It runs the R code Ancestral_Analysis.R. You'll need both R and the package dplyr. Be sure to change the paths in the headers.
 
 If not, you may find the code helpful in Ancestral_Analysis.R useful, still.
 
