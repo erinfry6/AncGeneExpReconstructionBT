@@ -50,6 +50,8 @@ export scriptversion=1  ## modify this if running multiple files at once
 
 ###########################################################
 
+## CREATING COMMAND FILES
+
 	## creates the command files to use or not use each evolutionary rate parameter
 
 	echo $command1 > ${pathCommands}/delta.txt
@@ -98,7 +100,7 @@ echo run >> ${pathCommands}/none.txt
 
 	## first, makes a temporary file to contain only gene expression from the one gene, then creates the directory for that gene
 
-for a in {2..100}
+for a in {2..3}
 	do
 
 	awk -v a="$a" '{print $1,$a}' ${pathData}/${Expressiondata} > ${expData}

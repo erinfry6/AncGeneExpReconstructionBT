@@ -1,0 +1,28 @@
+#NEXUS
+[written Fri Oct 02 10:50:31 CDT 2015 by Mesquite  version 2.75 (build 566) at Lynchs-iMac-2.local/192.168.1.9]
+
+BEGIN TREES;
+	TRANSLATE
+		1 hsa_br_M_1,
+		2 hsa_br_M_2,
+		3 hsa_br_M_3,
+		4 hsa_br_M_4,
+		6 hsa_br_F_1,
+		7 ptr_br_M_3,
+		8 ptr_br_M_2,
+		9 ptr_br_M_5,
+		10 ptr_br_M_1,
+		11 ptr_br_M_4,
+		12 ptr_br_F_1,
+		13 ppa_br_M_1,
+		14 ppa_br_F_1,
+		15 ppa_br_F_2,
+		16 ggo_br_M_1,
+		17 ggo_br_F_1,
+		18 ppy_br_M_1,
+		19 ppy_br_F_1,
+		20 mml_br_M_2;
+	tree primebrain_bestDates = (((((1:0.2,2:0.2,3:0.2,4:0.2,6:0.2):6.4,((7:0.9,8:0.9,9:0.9,10:0.9,11:0.9,12:0.9):1.9,(13:0.9,14:0.9,15:0.9):1.9):3.8):2.3,(16:0.95,17:0.95):7.95):6.9,(18:1.5,19:1.5):14.3):13.3,20:29.1);
+
+END;
+

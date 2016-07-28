@@ -31,7 +31,7 @@ export path=/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutiv
 
 	## copy the files containing the likelihood under each model to a directory for better analysis
 
-for x in {1..15}  ## modify this to match the total number of genes you are analyzing
+for x in {1..3}  ## modify this to match the total number of genes you are analyzing
 	do
 	cp ${pathResults}/gene$x/delta.txt ${pathResults}/modelDelta/gene$x.txt
 	cp ${pathResults}/gene$x/kappa.txt ${pathResults}/modelKappa/gene$x.txt
@@ -43,6 +43,6 @@ for x in {1..15}  ## modify this to match the total number of genes you are anal
 
 	## Collect the likelihoods and find the highest for each gene using the R script titled 'find_Likelihoods.R'
 	
-	R --vanilla <find_Likelihoods.R 
+	R --vanilla <find_best_model.R 
 
 
