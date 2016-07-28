@@ -10,28 +10,26 @@ export path=/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutiv
 	export pathData=${path}/data
 	export pathScripts=${path}/scripts
 	export pathResults=${path}/results
+	export pathTemp=${pathResults}/temporary
+	export pathCommands=${pathScripts}/commands
 	
 ###########################################################
 	
 	## make directory to store the temporary files and commands
 	
-	if [ -e ${pathResults}/temporary ]; then
+	if [ -e ${pathTemp} ]; then
    	echo 'Temporary dir already here'
     else
-    mkdir ${pathResults}/temporary
+    mkdir ${pathTemp}
     fi
 
 ## make directory to store the results
 	
-	if [ -e ${pathScripts}/commands ]; then
+	if [ -e ${pathCommands} ]; then
    	echo 'Command dir already here'
     else
-    mkdir ${pathScripts}/commands
+    mkdir ${pathCommands}
     fi
-
-	## set output paths
-	export pathTemporary=${pathResults}/temporary
-	export pathCommands=${pathScripts}/commands
 
 ###########################################################
 
@@ -46,9 +44,9 @@ export path=/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutiv
 ## if running multiple of these files at once, make sure to modify scriptversion to be a different number in each script to avoid creating the same numbered files
 
 export scriptversion=1  ## modify this if running multiple files at once
-	export expData=${pathTemporary}/singlegene$scriptversion.txt
-	export MCMC=${pathTemporary}/MCMC$scriptversion.txt
-	export model=${pathTemporary}/Model$scriptversion.bin
+	export expData=${pathTemp}/singlegene$scriptversion.txt
+	export MCMC=${pathTemp}/MCMC$scriptversion.txt
+	export model=${pathTemp}/Model$scriptversion.bin
 
 ###########################################################
 

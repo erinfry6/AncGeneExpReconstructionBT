@@ -1,18 +1,50 @@
-Before you begin, create a home directory that contains directories titled: data, reults and scripts. 
-Also, download and place BayesTraits's file in this directory. Name it BayesTraitsV2.
+The following scripts can be used to reconstruct ancestral posterior probability distributions of gene expression at internal nodes within a phylogenetic tree.
 
-The scripts should be run in the following order with the described purpose:
+They will:
+
+1) Reconstruct ancestral gene expression levels using BayesTrait’s continuous trait, random walk MCMC algorithm, transcriptome data from extant species, and the known species phylogeny with distances.
+
+2) Identify genes with expression shifts in the lineage of interest by comparing the posterior probability distributions of the ancestral reconstructions
+
+#################################################################################
+
+## These scripts and pipeline were written by Erin Fry (efry@uchicago.edu) in the Lynch Laboratory at the University of Chicago
+## Last modified: July 28 2016
+
+#################################################################################
+
+Before beginning, create a home directory for the pipeline that contains the following subdirectories
+
+				home/data  		
+				
+				home/results
+				
+				home/scripts
+				
+				home/BayesTraitsV2
+				
+Place the contents of this repository in the scripts folder.
+
+The home/BayesTraitsV2 directory is the downloaded Version 2 of BayesTraits (http://www.evolution.rdg.ac.uk/BayesTraits.html)
+BayesTraits Manual: http://www.evolution.rdg.ac.uk/BayesTraitsV2.0Files/TraitsV2Manual.pdf
+
+#################################################################################
+
+Run the scripts in the following order.
+
+1) run_MCMC.sh - Run the MCMC chain under the four evolutionary rate parameter models relavent to gene expression. 
+
+   ./run_MCMC.sh Expression_Data.txt SampleTree.tree 4 2
+   
+   		Expression_Data.txt is a tab delimited .txt file containing expression data formatted according to the BayesTraits Manual.
+		SampleTree.tree is an ultrametric nexus formatted phylogeny with branch distances formatted according to the BayesTraits Manual.
+		4 and 2 are the two commands necessary to run BayesTraits and indicate 
+		
+		Make sure to keep track of the gene name order, as from now on, the gene will be known as gene#
+		The third and fourth are the first two command necessary for BayesTraits (see Manual)
 
 
-1) run_MCMC.sh - this will run the MCMC chain under the four evolutionary rate parameter models relavent to gene expression. 
-You will need a simple tabular '.txt' file with expression data. First column with sample names (that match the tree (Nexus formatted) file).
-The rest of the columns in the .txt file should be the expression values for each gene. 
-Make sure to keep track of the gene name order, as from now on, the gene will be known as gene#
-The second input is a tree file, again NEXUS formatted (see manual)
-The third and fourth are the first two command necessary for BayesTraits (see Manual)
-
-
-in the command line looks like$ ./run_MCMC.sh RPKM_Expression_Data.txt MyTree.tree 4 2
+in the command line looks like$ ./run_MCMC.sh Expression_Data.txt SampleTree.tree 4 2
 
 The output will be in home/results.
 
