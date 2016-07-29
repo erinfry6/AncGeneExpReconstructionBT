@@ -33,16 +33,20 @@ BayesTraits Manual: http://www.evolution.rdg.ac.uk/BayesTraitsV2.0Files/TraitsV2
 Run the scripts in the following order. 
 ***The top of each script (all .sh and .R files) must be modified to contain the proper directory path for the home directory
 
+**The scripts refer to genes by their column number in the Expression_Data.txt file. The numbering will begin at 2, not 1. 
+
+*For steps 1 and 3, modify the .sh file for loops at the end of the script to run the analysis on the desired number of genes. 
+
 1) run_MCMC.sh - Run the MCMC chain under the four evolutionary rate parameter models relavent to gene expression. 
 
    ./run_MCMC.sh Expression_Data.txt SampleTree.tree 4 2
    
-Expression_Data.txt is a tab delimited .txt file containing expression data formatted according to the BayesTraits Manual.
-SampleTree.tree is an ultrametric nexus formatted phylogeny with branch distances formatted according to the BayesTraits Manual.
+Expression_Data.txt is a tab delimited file containing expression data formatted according to the BayesTraits Manual.
+SampleTree.tree is an ultrametric nexus formatted phylogeny formatted according to the BayesTraits Manual.
 4 (continuous walk) and 2 (MCMC) are the two commands necessary to run BayesTraits random walk MCMC algorithm
 
-***It is important to look at the command files being created by run_MCMC.sh. If you would like to modify the commands files,
-you will need to manually change each of the four command file writing scripts in the 'CREATING COMAMAND FILES' section.
+***It is important to look at the command files being created by run_MCMC.sh. If you would like to modify the command files,
+you will need to manually change each of the four command file writing scripts in the 'CREATING COMAMAND FILES' section.***
 
 #################################################################################
 
