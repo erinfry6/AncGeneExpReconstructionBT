@@ -1,3 +1,5 @@
+# Ancestral Transcriptome Reconstruction
+
 The following scripts can be used to reconstruct ancestral posterior probability distributions of gene expression at internal nodes within a phylogenetic tree.
 
 They will:
@@ -8,8 +10,8 @@ They will:
 
 #################################################################################
 
-## These scripts and pipeline were written by Erin Fry (efry@uchicago.edu) in the Lynch Laboratory at the University of Chicago
-## Last modified: July 28 2016
+### These scripts and pipeline were written by Erin Fry (efry@uchicago.edu) in the Lynch Laboratory at the University of Chicago
+### Last modified: July 28 2016
 
 #################################################################################
 
@@ -30,12 +32,11 @@ BayesTraits Manual: http://www.evolution.rdg.ac.uk/BayesTraitsV2.0Files/TraitsV2
 
 #################################################################################
 
-Run the scripts in the following order. 
-***The top of each script (all .sh and .R files) must be modified to contain the proper directory path for the home directory
+_*The top of each script (all .sh and .R files) must be modified to contain the proper directory path for the home director_
 
-1) run_MCMC.sh - Run the MCMC chain under the four evolutionary rate parameter models relavent to gene expression. 
+1) run_MCMC.sh _Run the MCMC chain under the four evolutionary rate parameter models relavent to gene expression._
 
-   ./run_MCMC.sh Expression_Data.txt SampleTree.tree 4 2
+   `./run_MCMC.sh Expression_Data.txt SampleTree.tree 4 2`
    
 Expression_Data.txt is a tab delimited .txt file containing expression data formatted according to the BayesTraits Manual.
 SampleTree.tree is an ultrametric nexus formatted phylogeny with branch distances formatted according to the BayesTraits Manual.
