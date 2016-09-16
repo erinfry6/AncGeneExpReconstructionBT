@@ -11,7 +11,7 @@ They will:
 #################################################################################
 
 ### These scripts and pipeline were written by Erin Fry (efry@uchicago.edu) in the Lynch Laboratory at the University of Chicago
-### Last modified: July 28 2016
+### Last modified: September 16 2016
 
 #################################################################################
 
@@ -32,7 +32,7 @@ BayesTraits Manual: http://www.evolution.rdg.ac.uk/BayesTraitsV2.0Files/TraitsV2
 
 #################################################################################
 
-_The top of each script (all .sh and .R files) must be modified to contain the proper directory path for the home director_
+_The top of each script (all .sh and .R files) must be modified to contain the proper directory path for the home directory_
 
 1) run_MCMC.sh -Run the MCMC chain under the four evolutionary rate parameter models relavent to gene expression.
 
@@ -68,10 +68,14 @@ _All four inputs following the bash script should be the exact same as in step 1
 
 4) ID_divergent_genes.sh - Calculates the percent divergence between the two posterior probability distributions of two ancestral states using `Ancestral_Analysis.R`
 
-_Requires the R packaged 'dplyr'._
+```
+./ID_divergent_genes.sh
+```
+
+_Requires the R package 'dplyr'._
 
 #################################################################################
 
 **To run these scripts on the example test files, copy the files in scripts/test to the data directory and follow the above steps.**
 
-### Erin Fry, September 16 2016
+### by Erin Fry, September 16 2016
