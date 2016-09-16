@@ -32,37 +32,43 @@ BayesTraits Manual: http://www.evolution.rdg.ac.uk/BayesTraitsV2.0Files/TraitsV2
 
 #################################################################################
 
-_*The top of each script (all .sh and .R files) must be modified to contain the proper directory path for the home director_
+_The top of each script (all .sh and .R files) must be modified to contain the proper directory path for the home director_
 
-1) run_MCMC.sh _Run the MCMC chain under the four evolutionary rate parameter models relavent to gene expression._
+1) run_MCMC.sh -_Run the MCMC chain under the four evolutionary rate parameter models relavent to gene expression._
 
-   `./run_MCMC.sh Expression_Data.txt SampleTree.tree 4 2`
+```
+./run_MCMC.sh Expression_Data.txt SampleTree.tree 4 2
+```
    
 Expression_Data.txt is a tab delimited .txt file containing expression data formatted according to the BayesTraits Manual.
 SampleTree.tree is an ultrametric nexus formatted phylogeny with branch distances formatted according to the BayesTraits Manual.
 4 (continuous walk) and 2 (MCMC) are the two commands necessary to run BayesTraits random walk MCMC algorithm
 
-***It is important to look at the command files being created by run_MCMC.sh. If you would like to modify the commands files,
-you will need to manually change each of the four command file writing scripts in the 'CREATING COMAMAND FILES' section.
+*It is important to look at the command files being created by run_MCMC.sh. If you would like to modify the commands files,
+you will need to manually change each of the four command file writing scripts in the 'CREATING COMAMAND FILES' section.*
 
 #################################################################################
 
-2) find_best_model.sh - this script collects the likelihoods from the first step and identifies which model best fits the trait's evolution using find_Likelihoods.R
+2) find_best_model.sh - _this script collects the likelihoods from the first step and identifies which model best fits the trait's evolution using `find_Likelihoods.R`_
+```
+./find_best_model.sh
+```
 
 #################################################################################
 
-3) ancestral_reconstruction.sh - reconstructs the posterior probability distribution of ancestral states at specified internal nodes using the best model for the gene's evolution. 
-   These nodes must be specified in the CREATING COMMAND FILES section. See BayesTraits Manual for instructions.
-  
-   ./ancestral_reconstruction.sh Expression_Data.txt SampleTree.tree 4 2
+3) ancestral_reconstruction.sh - _reconstructs the posterior probability distribution of ancestral states at specified internal nodes using the best model for the gene's evolution. 
+   These nodes must be specified in the CREATING COMMAND FILES section. See BayesTraits Manual for instructions._
+```
+./ancestral_reconstruction.sh Expression_Data.txt SampleTree.tree 4 2
+```
    
-All four inputs following the bash script should be the exact same as in step 1.
+_All four inputs following the bash script should be the exact same as in step 1._
 
 #################################################################################
 
-4) ID_divergent_genes.sh - calculates the percent divergence between the two posterior probability distributions of two ancestral states using Ancestral_Analysis.R
+4) ID_divergent_genes.sh - _calculates the percent divergence between the two posterior probability distributions of two ancestral states using `Ancestral_Analysis.R`_
 
-Requires the R packaged 'dplyr'.
+_Requires the R packaged 'dplyr'._
 
 #################################################################################
 
