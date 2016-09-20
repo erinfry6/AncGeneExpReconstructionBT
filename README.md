@@ -32,11 +32,11 @@ BayesTraits Manual: http://www.evolution.rdg.ac.uk/BayesTraitsV2.0Files/TraitsV2
 
 #################################################################################
 
-_The top of each script (all .sh and .R files) must be modified to contain the proper directory path for the home directory_
+**The top of each script (all .sh and .R files) must be modified to contain the proper directory path for the home directory**
 
-**The scripts refer to genes by their column number in the Expression_Data.txt file. The numbering will begin at 2, not 1. 
+**The scripts refer to genes by their column number in the Expression_Data.txt file. The numbering will begin at 2, not 1.*
 
-*For steps 1 and 3, modify the .sh file for loops at the end of the script to run the analysis on the desired number of genes. 
+*For steps 1 and 3, modify the .sh file for loops at the end of the script to run the analysis on the desired number of genes.*
 
 1) run_MCMC.sh - Run the MCMC chain under the four evolutionary rate parameter models relavent to gene expression. 
 
@@ -60,7 +60,6 @@ you will need to manually change each of the four command file writing scripts i
 
 #################################################################################
 
-<<<<<<< HEAD:README.txt
 3) ancestral_reconstruction.sh - reconstructs the posterior probability distribution of ancestral states at specified internal nodes using the best model for the gene's evolution. 
 
 These nodes must be specified in the CREATING COMMAND FILES section. See BayesTraits Manual for instructions.
