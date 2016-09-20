@@ -1,3 +1,5 @@
+# Ancestral Transcriptome Reconstruction
+
 The following scripts can be used to reconstruct ancestral posterior probability distributions of gene expression at internal nodes within a phylogenetic tree.
 
 They will:
@@ -8,8 +10,8 @@ They will:
 
 #################################################################################
 
-## These scripts and pipeline were written by Erin Fry (efry@uchicago.edu) in the Lynch Laboratory at the University of Chicago
-## Last modified: July 28 2016
+### These scripts and pipeline were written by Erin Fry (efry@uchicago.edu) in the Lynch Laboratory at the University of Chicago
+### Last modified: September 16 2016
 
 #################################################################################
 
@@ -30,8 +32,7 @@ BayesTraits Manual: http://www.evolution.rdg.ac.uk/BayesTraitsV2.0Files/TraitsV2
 
 #################################################################################
 
-Run the scripts in the following order. 
-***The top of each script (all .sh and .R files) must be modified to contain the proper directory path for the home directory
+_The top of each script (all .sh and .R files) must be modified to contain the proper directory path for the home directory_
 
 **The scripts refer to genes by their column number in the Expression_Data.txt file. The numbering will begin at 2, not 1. 
 
@@ -39,37 +40,53 @@ Run the scripts in the following order.
 
 1) run_MCMC.sh - Run the MCMC chain under the four evolutionary rate parameter models relavent to gene expression. 
 
-   ./run_MCMC.sh Expression_Data.txt SampleTree.tree 4 2
+```
+./run_MCMC.sh Expression_Data.txt SampleTree.tree 4 2
+```
    
 Expression_Data.txt is a tab delimited file containing expression data formatted according to the BayesTraits Manual.
 SampleTree.tree is an ultrametric nexus formatted phylogeny formatted according to the BayesTraits Manual.
 4 (continuous walk) and 2 (MCMC) are the two commands necessary to run BayesTraits random walk MCMC algorithm
 
-***It is important to look at the command files being created by run_MCMC.sh. If you would like to modify the command files,
-you will need to manually change each of the four command file writing scripts in the 'CREATING COMAMAND FILES' section.***
+**It is important to look at the command files being created by run_MCMC.sh. If you would like to modify the command files,
+you will need to manually change each of the four command file writing scripts in the 'CREATING COMAMAND FILES' section.**
 
 #################################################################################
 
-2) find_best_model.sh - this script collects the likelihoods from the first step and identifies which model best fits the trait's evolution using find_Likelihoods.R
+2) find_best_model.sh - This script collects the likelihoods from the first step and identifies which model best fits the trait's evolution using `find_Likelihoods.R`
+```
+./find_best_model.sh
+```
 
 #################################################################################
 
+<<<<<<< HEAD:README.txt
 3) ancestral_reconstruction.sh - reconstructs the posterior probability distribution of ancestral states at specified internal nodes using the best model for the gene's evolution. 
 
 These nodes must be specified in the CREATING COMMAND FILES section. See BayesTraits Manual for instructions.
   
    ./ancestral_reconstruction.sh Expression_Data.txt SampleTree.tree 4 2
+=======
+3) ancestral_reconstruction.sh - Reconstructs the posterior probability distribution of ancestral states at specified internal nodes using the best model for the gene's evolution. 
+   These nodes must be specified in the CREATING COMMAND FILES section. See BayesTraits Manual for instructions.
+```
+./ancestral_reconstruction.sh Expression_Data.txt SampleTree.tree 4 2
+```
    
-All four inputs following the bash script should be the exact same as in step 1.
+_All four inputs following the bash script should be the exact same as in step 1._
 
 #################################################################################
 
-4) ID_divergent_genes.sh - calculates the percent divergence between the two posterior probability distributions of two ancestral states using Ancestral_Analysis.R
+4) ID_divergent_genes.sh - Calculates the percent divergence between the two posterior probability distributions of two ancestral states using `Ancestral_Analysis.R`
 
-Requires the R packaged 'dplyr'.
+```
+./ID_divergent_genes.sh
+```
+
+_Requires the R package 'dplyr'._
 
 #################################################################################
 
-Test files located in scripts/test:
+**To run these scripts on the example test files, copy the files in scripts/test to the data directory and follow the above steps.**
 
-To run these scripts on the example test files, copy them to the data directory and follow the above steps.
+### by Erin Fry, September 16 2016
