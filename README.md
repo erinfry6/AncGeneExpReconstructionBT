@@ -34,9 +34,7 @@ BayesTraits Manual: http://www.evolution.rdg.ac.uk/BayesTraitsV2.0Files/TraitsV2
 
 **The top of each script (all .sh and .R files) must be modified to contain the proper directory path for the home directory**
 
-**The scripts refer to genes by their column number in the Expression_Data.txt file. The numbering will begin at 2, not 1.*
-
-*For steps 1 and 3, modify the .sh file for loops at the end of the script to run the analysis on the desired number of genes.*
+*The scripts refer to genes by their column number in the Expression_Data.txt file. The numbering will begin at 2, not 1. For steps 1 and 3, modify the .sh file for loops at the end of the script to run the analysis on the desired number of genes.*
 
 1) run_MCMC.sh - Run the MCMC chain under the four evolutionary rate parameter models relavent to gene expression. 
 
