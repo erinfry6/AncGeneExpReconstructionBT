@@ -58,12 +58,6 @@ you will need to manually change each of the four command file writing scripts i
 
 #################################################################################
 
-3) ancestral_reconstruction.sh - reconstructs the posterior probability distribution of ancestral states at specified internal nodes using the best model for the gene's evolution. 
-
-These nodes must be specified in the CREATING COMMAND FILES section. See BayesTraits Manual for instructions.
-  
-   ./ancestral_reconstruction.sh Expression_Data.txt SampleTree.tree 4 2
-=======
 3) ancestral_reconstruction.sh - Reconstructs the posterior probability distribution of ancestral states at specified internal nodes using the best model for the gene's evolution. 
    These nodes must be specified in the CREATING COMMAND FILES section. See BayesTraits Manual for instructions.
 ```
