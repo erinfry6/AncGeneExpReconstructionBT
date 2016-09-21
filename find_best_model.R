@@ -5,100 +5,86 @@
 
 #################################################################
 
-path="/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutive/BTReconstruct/" ##full absolute path to main directory
+path="/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConstitiutive/BTReconstruct/" ##full absolute path to main directory
 pathResults=paste(path,"results/",sep="")
 pathData=paste(path,"data/",sep="")
 
 #################################################################
 
 
-#collect the likelihood of the stepping stone sampler for each model for each gene
+#collect the log marginal likelihood of the stepping stone sampler for each model for each gene using the following function: 
+
+findsteppingstone<-function(){
+  options(stringsAsFactors = FALSE)
+  ldf <- list() # creates a list of the files
+  
+  listcsv<-paste("gene",as.character((order(dir(pattern = "*.txt")))),".txt", sep="") # creates the list of all the csv files in the directory in true (not computer) numerical order
+  for (k in 1:length(listcsv)){ 
+    ldf[[k]]<- read.csv(listcsv[k], sep='\t') # read files in listcsv into the ldf list
+  }
+  #find the stepping stone sampler log marginal likelihood for each gene
+  logmarginallikelihood<-vector(length=length(ldf))
+  for (i in 1:length(listcsv)){
+    logmarginallikelihood[i]<-as.numeric((ldf[[i]][nrow(ldf[[i]]),1]))
+  }
+  
+  return(logmarginallikelihood)
+  
+}
+
+
+## find the log marginal likelihood for each model for all genes
+
 
 ##first for model including the delta evolutionary rate parameter
 setwd(paste(pathResults,"modelDelta/",sep=""))
-options(stringsAsFactors = FALSE)
+delta<-findsteppingstone()
 
-ldf <- list() # creates a list
-listcsv<-paste("gene",as.character((order(dir(pattern = "*.txt")))),".txt", sep="") # creates the list of all the csv files in the directory in true (not computer) numerical order
-for (k in 1:length(listcsv)){ 
-  ldf[[k]]<- read.csv(listcsv[k], sep='\t') # read files in listcsv into the ldf list
-  }
-#find the harmonic means
-deltass<-vector(length=length(ldf))
-for (i in 1:length(listcsv)){
-  deltass[i]<-as.numeric((ldf[[i]][nrow(ldf[[i]]),1]))
-}
+## for kappa
+setwd(paste(pathResults,"modelKappa/",sep=""))
+kappa<-findsteppingstone()
 
-#now for the kappa model
-setwd(paste(pathResults,"modelKappa",sep=""))
-ldf <- list() # creates a list
-listcsv<-paste("gene",as.character((order(dir(pattern = "*.txt")))),".txt", sep="") # creates the list of all the csv files in the directory in true (not computer) numerical order
-for (k in 1:length(listcsv)){ 
-  ldf[[k]]<- read.csv(listcsv[k], sep='\t') # read files in listcsv into the ldf list
-  }
-#find the harmonic means
-kappass<-vector(length=length(ldf))
-for (i in 1:length(ldf)){
-  kappass[i]<-as.numeric((ldf[[i]][nrow(ldf[[i]]),1]))
-}
+## kappa and delta
+setwd(paste(pathResults,"modelKappaDelta/",sep=""))
+kappadelta<-findsteppingstone()
 
-#now for the model with no evo rate parameters
-setwd(paste(pathResults,"modelNone",sep=""))
-ldf <- list() # creates a list
-listcsv<-paste("gene",as.character((order(dir(pattern = "*.txt")))),".txt", sep="") # creates the list of all the csv files in the directory in true (not computer) numerical order
-for (k in 1:length(listcsv)){ 
-  ldf[[k]]<- read.csv(listcsv[k], sep='\t') # read files in listcsv into the ldf list
-  }
-#find the harmonic means
-plainss<-vector(length=length(ldf))
-for (i in 1:length(ldf)){
- plainss[i]<-as.numeric((ldf[[i]][nrow(ldf[[i]]),1]))
-}
 
-#lastly, for the model with both kappa and delta
-setwd(paste(pathResults,"modelKappaDelta",sep=""))
-ldf <- list() # creates a list
-listcsv<-paste("gene",as.character((order(dir(pattern = "*.txt")))),".txt", sep="") # creates the list of all the csv files in the directory in true (not computer) numerical order
-for (k in 1:length(listcsv)){ 
-  ldf[[k]]<- read.csv(listcsv[k], sep='\t') # read files in listcsv into the ldf list
-  }
-#find the harmonic means
-kappadeltass<-vector(length=length(ldf))
-for (i in 1:length(ldf)){
-  kappadeltass[i]<-as.numeric((ldf[[i]][nrow(ldf[[i]]),1]))
-}
-
+## last without additional paramaters
+setwd(paste(pathResults,"modelNone/",sep=""))
+none<-findsteppingstone()
 
 ###########################################################
 
-## Combine the information into one file to export, also indicate which model choice is best based on the harmonic mean of the Lh values
+## Combine the information into one file to export, with the gene names and which model is opitmal based on the stepping stone sampler log marginal likelihoods
 
-steppingstonevals<-(rbind(t(listcsv),
-                   t(deltass),t(kappass),
-                   t(plainss),t(kappadeltass)))
+listcsv<-paste("gene",as.character((order(dir(pattern = "*.txt")))),".txt", sep="") # creates the list of all the csv files in the directory in true (not computer) numerical order
+
+steppingstoneLML<-(rbind(t(listcsv),
+                   t(delta),t(kappa),
+                   t(none),t(kappadelta)))
 ## set the row names of the dataframe
-rownames(steppingstonevals)<-c("gene_number", "ss_Delta", "ss_Kappa",
-                         "ss_Plain", "ss_KD")
+rownames(steppingstoneLML)<-c("gene_number", "LML_Delta", "LML_Kappa",
+                         "LML_None", "LML_KD")
 
 ## create a vector of which choice is best for the parameters for that gene's evolution
-modelchoice<-vector(length=length(ldf))
-for (i in 1:length(ldf)){
-  modelchoice[i]<-(which.max(steppingstonevals[2:5,(i)]))
+modelchoice<-vector(length=length(listcsv))
+for (i in 1:length(listcsv)){
+  modelchoice[i]<-(which.max(steppingstoneLML[2:5,(i)]))
             #Choice of 1=delta, 2=Kappa 3=Plain 4=Kappa and Delta**
 }
 
 ## combine that with the information and create a column
-steppingstonevals<-as.data.frame(t(rbind(steppingstonevals, modelchoice)))
+steppingstoneLML<-as.data.frame(t(rbind(steppingstoneLML, modelchoice)))
 
 ## take a look at the file
-head(steppingstonevals)
+head(steppingstoneLML)
 
 ###########################################################
 
-## First, create a file to indicate which model to use during ancestral reconstruction
+## Create a file to indicate which model to use during ancestral reconstruction
 
 setwd(pathData)
 write.table(t(modelchoice), "modelchoice.txt", sep= "\t",row.names=FALSE, col.names=FALSE)
 
-## then just save the data you have so far 
+## Save the data you have so far 
 write.table(steppingstonevals,"LikelihoodsUnderEachModel.txt",sep='\t', row.names=FALSE)
