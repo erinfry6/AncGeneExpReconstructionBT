@@ -14,7 +14,7 @@ pathData=paste(path,"data/",sep="")
 
 #collect the log marginal likelihood of the stepping stone sampler for each model for each gene using the following function: 
 
-findsteppingstone<-function(){
+findLML<-function(){
   options(stringsAsFactors = FALSE)
   ldf <- list() # creates a list of the files
   
@@ -38,20 +38,20 @@ findsteppingstone<-function(){
 
 ##first for model including the delta evolutionary rate parameter
 setwd(paste(pathResults,"modelDelta/",sep=""))
-delta<-findsteppingstone()
+delta<-findLML()
 
 ## for kappa
 setwd(paste(pathResults,"modelKappa/",sep=""))
-kappa<-findsteppingstone()
+kappa<-findLML()
 
 ## kappa and delta
 setwd(paste(pathResults,"modelKappaDelta/",sep=""))
-kappadelta<-findsteppingstone()
+kappadelta<-findLML()
 
 
 ## last without additional paramaters
 setwd(paste(pathResults,"modelNone/",sep=""))
-none<-findsteppingstone()
+none<-findLML()
 
 ###########################################################
 
@@ -66,14 +66,14 @@ steppingstoneLML<-(rbind(t(listcsv),
 rownames(steppingstoneLML)<-c("gene_number", "LML_Delta", "LML_Kappa",
                          "LML_None", "LML_KD")
 
-## create a vector of which choice is best for the parameters for that gene's evolution
+## create a vector of which choice is best for the parameters for modeling each gene's evolution
 modelchoice<-vector(length=length(listcsv))
 for (i in 1:length(listcsv)){
   modelchoice[i]<-(which.max(steppingstoneLML[2:5,(i)]))
             #Choice of 1=delta, 2=Kappa 3=Plain 4=Kappa and Delta**
 }
 
-## combine that with the information and create a column
+## combine model choices with LMLs
 steppingstoneLML<-as.data.frame(t(rbind(steppingstoneLML, modelchoice)))
 
 ## take a look at the file
@@ -87,4 +87,4 @@ setwd(pathData)
 write.table(t(modelchoice), "modelchoice.txt", sep= "\t",row.names=FALSE, col.names=FALSE)
 
 ## Save the data you have so far 
-write.table(steppingstonevals,"LikelihoodsUnderEachModel.txt",sep='\t', row.names=FALSE)
+write.table(steppingstoneLML,"LikelihoodsUnderEachModel.txt",sep='\t', row.names=FALSE)
