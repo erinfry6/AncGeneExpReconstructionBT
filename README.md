@@ -26,17 +26,17 @@ Place the contents of this repository in the scripts folder.
 
 BayesTraits Manual: http://www.evolution.rdg.ac.uk/BayesTraitsV2.0Files/TraitsV2Manual.pdf
 
-*For this particular pipeline, I have used a modified version of BayesTraits (by Andrew Meade) that allows for the specification of priors on ancestral nodes. This version can be obtained by cont*
+*For this particular pipeline, I have a version of BayesTraits modified by Andrew Meade that allows for the specification of priors on ancestral nodes. This version is included in the this repository.*
 
 #################################################################################
 
 ## Format input files
 
-The following input files are required for this analysis
+The following input files are required for this analysis:
 
-	-Expression_Data.txt: Expression data file with no column names. First column: names of the samples that coordinate with the Nexus tree file. All subsequent columns are the expression data for each gene. Be sure to keep another document that notes the gene in each column, as well as gene numbers, beginning at 2.
+-Expression_Data.txt: Expression data file with no column names. First column: names of the samples that coordinate with the Nexus tree file. All subsequent columns are the expression data for each gene. Be sure to keep another document that notes the gene in each column, as well as gene numbers, beginning at 2.
 
-	-SampleTree.tree: This file should be a Nexus formatted tree in accordance with the BayesTraits Manual
+-SampleTree.tree: This file should be a Nexus formatted tree in accordance with the BayesTraits Manual
 
 
 #################################################################################
@@ -53,7 +53,7 @@ The numbering will begin at 2, not 1. For steps 1 and 3, modify the .sh file for
 ## Run the Bayesian Ancestral Transcriptome Reconstruction Scripts
 
 
-	1- run_MCMC.sh - Run the MCMC chain under the four evolutionary rate parameter models relavent to gene expression. 
+#### 1)run_MCMC.sh - Run the MCMC chain under the four evolutionary rate parameter models relavent to gene expression. 
 
 ```
 ./run_MCMC.sh Expression_Data.txt SampleTree.tree 4 2
