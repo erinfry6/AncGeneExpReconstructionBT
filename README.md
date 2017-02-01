@@ -11,9 +11,11 @@ They will:
 #################################################################################
 
 ### These scripts and pipeline were written by Erin Fry (efry@uchicago.edu) in the Lynch Laboratory at the University of Chicago
-### Last modified: September 16 2016
+### Last modified: February 1 2017
 
 #################################################################################
+
+## Set up directories
 
 Before beginning, create a home directory for the pipeline that contains the following subdirectories
 
@@ -30,13 +32,34 @@ Place the contents of this repository in the scripts folder.
 The home/BayesTraitsV2 directory is the downloaded Version 2 of BayesTraits (http://www.evolution.rdg.ac.uk/BayesTraits.html)
 BayesTraits Manual: http://www.evolution.rdg.ac.uk/BayesTraitsV2.0Files/TraitsV2Manual.pdf
 
+*For this particular pipeline, I have used a modified version of BayesTraits (by Andrew Meade) that allows for the specification of priors on ancestral nodes.*
+
 #################################################################################
 
-**The top of each script (all .sh and .R files) must be modified to contain the proper directory path for the home directory**
+## Format input files
 
-*The scripts refer to genes by their column number in the Expression_Data.txt file. The numbering will begin at 2, not 1. For steps 1 and 3, modify the .sh file for loops at the end of the script to run the analysis on the desired number of genes.*
+The following input files are required for this analysis
 
-1) run_MCMC.sh - Run the MCMC chain under the four evolutionary rate parameter models relavent to gene expression. 
+	-Expression_Data.txt: Expression data file with no column names. First column: names of the samples that coordinate with the Nexus tree file. All subsequent columns are the expression data for each gene. Be sure to keep another document that notes the gene in each column, as well as gene numbers, beginning at 2.
+
+	-SampleTree.tree: This file should be a Nexus formatted tree in accordance with the BayesTraits Manual
+
+
+#################################################################################
+
+## Modify the script headers
+
+The top of each script (all .sh and .R files) must be modified to contain the proper directory path for the home directory
+
+The numbering will begin at 2, not 1. For steps 1 and 3, modify the .sh file for loops at the end of the script to run the analysis on the desired number of genes.
+
+
+#################################################################################
+
+## Run the Bayesian Ancestral Transcriptome Reconstruction Scripts
+
+
+	1- run_MCMC.sh - Run the MCMC chain under the four evolutionary rate parameter models relavent to gene expression. 
 
 ```
 ./run_MCMC.sh Expression_Data.txt SampleTree.tree 4 2
@@ -46,17 +69,14 @@ Expression_Data.txt is a tab delimited file containing expression data formatted
 SampleTree.tree is an ultrametric nexus formatted phylogeny formatted according to the BayesTraits Manual.
 4 (continuous walk) and 2 (MCMC) are the two commands necessary to run BayesTraits random walk MCMC algorithm
 
-**It is important to look at the command files being created by run_MCMC.sh. If you would like to modify the command files,
-you will need to manually change each of the four command file writing scripts in the 'CREATING COMAMAND FILES' section.**
+**It is important to look at the command files being created by run_MCMC.sh. If you would like to modify the command files, you will need to manually change each of the four command file writing scripts in the 'CREATING COMAMAND FILES' section.**
 
-#################################################################################
 
 2) find_best_model.sh - This script collects the likelihoods from the first step and identifies which model best fits the trait's evolution using `find_Likelihoods.R`
 ```
 ./find_best_model.sh
 ```
 
-#################################################################################
 
 3) ancestral_reconstruction.sh - Reconstructs the posterior probability distribution of ancestral states at specified internal nodes using the best model for the gene's evolution. 
    These nodes must be specified in the CREATING COMMAND FILES section. See BayesTraits Manual for instructions.
