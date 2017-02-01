@@ -94,7 +94,8 @@ echo run >> ${commandfile}
 
 ## for loop goes through each of the genes specified in { .. }
 
-	## first, makes a temporary file to contain only gene expression from the one gene, then creates the directory for that gene
+	## first, makes a temporary file to contain only gene expression from the one gene, then runs the MCMC chain exploring the evolution of each gene's expression
+	## it then copies the stepping stone sampler file and model file for future use to their appropriate folders
 
 for a in {2..13080}
 	do

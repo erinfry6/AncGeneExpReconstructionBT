@@ -45,11 +45,11 @@ The following input files are required for this analysis:
 
 ## Modify the scripts
 
-The top of each script (all .sh and .R files) must be modified to contain the proper directory path for the home directory
+ - The top of each script (all .sh and .R files) must be modified to contain the proper directory path for the home directory
 
-The numbering will begin at 2, not 1. For steps 1 and 3, modify the .sh file for loops at the end of the script to run the analysis on the desired number of genes.
+ - The numbering will begin at 2, not 1. For steps 1 and 3, modify the .sh file for loops at the end of the script to run the analysis on the desired number of genes.
 
-It is important to look at the command files being created in run_MCMC.sh. If you would like to modify the command files, you will need to manually change each of the four command file writing scripts in the 'CREATING COMMAND FILES' section.
+ - It is important to look at the command files being created in run_MCMC.sh. If you would like to modify the command files, you will need to manually change the command file writing scripts in the 'CREATING COMMAND FILES' section.
 
 
 #################################################################################
