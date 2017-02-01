@@ -1,6 +1,6 @@
 # Ancestral Transcriptome Reconstruction
 
-The following scripts can be used to reconstruct ancestral posterior probability distributions of gene expression at internal nodes within a phylogenetic tree.
+The following scripts can be used to reconstruct ancestral posterior probability distributions of gene expression at internal nodes within a phylogenetic tree. These scripts and pipeline were written by Erin Fry (efry@uchicago.edu) in the Lynch Laboratory, Department of Human Genetics, University of Chicago.
 
 They will:
 
@@ -8,10 +8,6 @@ They will:
 
 2) Identify genes with expression shifts in the lineage of interest by comparing the posterior probability distributions of the ancestral reconstructions
 
-#################################################################################
-
-### These scripts and pipeline were written by Erin Fry (efry@uchicago.edu) in the Lynch Laboratory at the University of Chicago
-### Last modified: February 1 2017
 
 #################################################################################
 
@@ -25,14 +21,12 @@ Before beginning, create a home directory for the pipeline that contains the fol
 				
 				home/scripts
 				
-				home/BayesTraitsV2
 				
 Place the contents of this repository in the scripts folder.
 
-The home/BayesTraitsV2 directory is the downloaded Version 2 of BayesTraits (http://www.evolution.rdg.ac.uk/BayesTraits.html)
 BayesTraits Manual: http://www.evolution.rdg.ac.uk/BayesTraitsV2.0Files/TraitsV2Manual.pdf
 
-*For this particular pipeline, I have used a modified version of BayesTraits (by Andrew Meade) that allows for the specification of priors on ancestral nodes.*
+*For this particular pipeline, I have used a modified version of BayesTraits (by Andrew Meade) that allows for the specification of priors on ancestral nodes. This version can be obtained by cont*
 
 #################################################################################
 
@@ -101,3 +95,4 @@ _Requires the R package 'dplyr'._
 **To run these scripts on the example test files, copy the files in scripts/test to the data directory and follow the above steps.**
 
 ### by Erin Fry, September 16 2016
+### Last modified: February 1 2017
