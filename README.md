@@ -21,8 +21,10 @@ Before beginning, create a home directory for the pipeline that contains the fol
 				
 				home/scripts
 				
+				home/BayesTraitsV2
 				
-Place the contents of this repository in the scripts folder.
+				
+Place the contents of this repository in the scripts folder, except for the BayesTraitsV2. Place this in the home/BayesTraitsV2 folder.
 
 BayesTraits Manual: http://www.evolution.rdg.ac.uk/BayesTraitsV2.0Files/TraitsV2Manual.pdf
 
@@ -34,9 +36,9 @@ BayesTraits Manual: http://www.evolution.rdg.ac.uk/BayesTraitsV2.0Files/TraitsV2
 
 The following input files are required for this analysis:
 
--Expression_Data.txt: a tab delimited file containing expression data formatted according to the BayesTraits Manual: Expression data file with no column names. First column: names of the samples that coordinate with the Nexus tree file. All subsequent columns are the expression data for each gene. Be sure to keep another document that notes the gene in each column, as well as gene numbers, beginning at 2.
+ - Expression_Data.txt: a tab delimited file containing expression data formatted according to the BayesTraits Manual: Expression data file with no column names. First column: names of the samples that coordinate with the Nexus tree file. All subsequent columns are the expression data for each gene. Be sure to keep another document that notes the gene in each column, as well as gene numbers, beginning at 2.
 
--SampleTree.tree: SampleTree.tree is an ultrametric nexus formatted phylogeny formatted according to the BayesTraits Manual.
+ - SampleTree.tree: SampleTree.tree is an ultrametric nexus formatted phylogeny formatted according to the BayesTraits Manual.
 
 
 #################################################################################
@@ -47,7 +49,7 @@ The top of each script (all .sh and .R files) must be modified to contain the pr
 
 The numbering will begin at 2, not 1. For steps 1 and 3, modify the .sh file for loops at the end of the script to run the analysis on the desired number of genes.
 
-*It is important to look at the command files being created by run_MCMC.sh. If you would like to modify the command files, you will need to manually change each of the four command file writing scripts in the 'CREATING COMAMAND FILES' section.*
+It is important to look at the command files being created in run_MCMC.sh. If you would like to modify the command files, you will need to manually change each of the four command file writing scripts in the 'CREATING COMMAND FILES' section.
 
 
 #################################################################################
@@ -64,13 +66,13 @@ The numbering will begin at 2, not 1. For steps 1 and 3, modify the .sh file for
 4 (continuous walk) and 2 (MCMC) are the two commands necessary to run BayesTraits random walk MCMC algorithm
 
 
-2) find_best_model.sh - This script collects the likelihoods from the first step and identifies which model best fits the trait's evolution using `find_Likelihoods.R`
+#### 2) find_best_model.sh - This script collects the likelihoods from the first step and identifies which model best fits the trait's evolution using `find_Likelihoods.R`
 ```
 ./find_best_model.sh
 ```
 
 
-3) ancestral_reconstruction.sh - Reconstructs the posterior probability distribution of ancestral states at specified internal nodes using the best model for the gene's evolution. 
+#### 3) ancestral_reconstruction.sh - Reconstructs the posterior probability distribution of ancestral states at specified internal nodes using the best model for the gene's evolution. 
    These nodes must be specified in the CREATING COMMAND FILES section. See BayesTraits Manual for instructions.
 ```
 ./ancestral_reconstruction.sh Expression_Data.txt SampleTree.tree 4 2
@@ -78,9 +80,8 @@ The numbering will begin at 2, not 1. For steps 1 and 3, modify the .sh file for
    
 _All four inputs following the bash script should be the exact same as in step 1._
 
-#################################################################################
 
-4) ID_divergent_genes.sh - Calculates the percent divergence between the two posterior probability distributions of two ancestral states using `Ancestral_Analysis.R`
+#### 4) ID_divergent_genes.sh - Calculates the percent divergence between the two posterior probability distributions of two ancestral states using `Ancestral_Analysis.R`
 
 ```
 ./ID_divergent_genes.sh
@@ -94,5 +95,5 @@ _Requires the R package 'dplyr'._
 
 To run these scripts on the example test files, copy the files in scripts/test to the data directory and follow the above steps.
 
-### by Erin Fry, September 16 2016
+### written by Erin Fry
 ### Last modified: February 1 2017
