@@ -4,8 +4,12 @@
 ## Non-indented lines should be evaluated for modification speficic to user's purpose
 
 ###########################################################
+export path=/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConstitiutive/BTReconstruct ##full absolute path to main directory
 
-export pathRecon=${pathResults}/AncRecon
+	export pathData=${path}/data
+	export pathScripts=${path}/scripts
+	export pathResults=${path}/results
+	export pathRecon=${pathResults}/AncRecon
 
 ###########################################################
 

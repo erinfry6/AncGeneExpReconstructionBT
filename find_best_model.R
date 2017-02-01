@@ -8,6 +8,7 @@
 path="/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConstitiutive/BTReconstruct/" ##full absolute path to main directory
 pathResults=paste(path,"results/",sep="")
 pathData=paste(path,"data/",sep="")
+source('functions.r')
 
 #################################################################
 

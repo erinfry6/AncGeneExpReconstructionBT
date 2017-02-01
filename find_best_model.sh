@@ -5,7 +5,7 @@
 
 ###########################################################
 
-export path=/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutive/BTReconstruct ##full absolute path to main directory
+export path=/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConstitiutive/BTReconstruct ##full absolute path to main directory
 
 	export pathData=${path}/data
 	export pathScripts=${path}/scripts
@@ -31,7 +31,7 @@ export path=/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutiv
 
 	## copy the files containing the likelihood under each model to a directory for better analysis
 
-for x in {1..3}  ## modify this to match the total number of genes you are analyzing
+for x in {1..13080}  ## modify this to match the total number of genes you are analyzing
 	do
 	cp ${pathResults}/gene$x/delta.txt ${pathResults}/modelDelta/gene$x.txt
 	cp ${pathResults}/gene$x/kappa.txt ${pathResults}/modelKappa/gene$x.txt

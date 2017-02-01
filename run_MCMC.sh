@@ -5,7 +5,7 @@
 
 ###########################################################
 
-export path=/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutive/BTReconstruct ##full absolute path to main directory
+export path=/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConstitiutive/BTReconstruct ##full absolute path to main directory
 
 	export pathData=${path}/data
 	export pathScripts=${path}/scripts
@@ -17,19 +17,19 @@ export path=/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutiv
 	
 	## make directory to store the temporary files and commands
 	
-	if [ -e ${pathTemp} ]; then
-   	echo 'Temporary dir already here'
-    else
-    mkdir ${pathTemp}
-    fi
+	#if [ -e ${pathTemp} ]; then
+   	#echo 'Temporary dir already here'
+    #else
+    #mkdir ${pathTemp}
+    #fi
 
 ## make directory to store the results
 	
-	if [ -e ${pathCommands} ]; then
-   	echo 'Command dir already here'
-    else
-    mkdir ${pathCommands}
-    fi
+	#if [ -e ${pathCommands} ]; then
+   	#echo 'Command dir already here'
+    #else
+    #mkdir ${pathCommands}
+    #fi
 
 ###########################################################
 
@@ -80,7 +80,7 @@ echo SaveModels $model >> ${pathCommands}/kappa.txt
 echo run >> ${pathCommands}/kappa.txt
 
 	echo 'Delta
-	Kappa
+Kappa
 Iterations 1010000
 Burnin 10000
 stones 100 10000' >> ${pathCommands}/kappadelta.txt
@@ -100,25 +100,25 @@ echo run >> ${pathCommands}/none.txt
 
 	## first, makes a temporary file to contain only gene expression from the one gene, then creates the directory for that gene
 
-for a in {2..3}
+for a in {2..3270}
 	do
 
 	awk -v a="$a" '{print $1,$a}' ${pathData}/${Expressiondata} > ${expData}
 
-	mkdir ${pathResults}/gene$a
+	#mkdir ${pathResults}/gene$a
 
 		#run the MCMC chain under each model for that gene, save the stepping stone sampler output to determine which model has the highest likelihood
-        ./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/none.txt > ${MCMC}
-        		cp ${expData}.log.txt.Stones.txt ${pathResults}/gene$a/none.txt
-        		cp ${model} ${pathResults}/gene$a/noneModel.bin
+        #./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/none.txt > ${MCMC}
+        		#cp ${expData}.log.txt.Stones.txt ${pathResults}/gene$a/none.txt
+        		#cp ${model} ${pathResults}/gene$a/noneModel.bin
         		
-        ./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/kappa.txt> ${MCMC}
-                cp ${expData}.log.txt.Stones.txt ${pathResults}/gene$a/kappa.txt 
-                cp ${model} ${pathResults}/gene$a/kappaModel.bin
+        #./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/kappa.txt> ${MCMC}
+                #cp ${expData}.log.txt.Stones.txt ${pathResults}/gene$a/kappa.txt 
+                #cp ${model} ${pathResults}/gene$a/kappaModel.bin
                 
-        ./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/delta.txt> ${MCMC}
-                cp ${expData}.log.txt.Stones.txt ${pathResults}/gene$a/delta.txt 
-            	cp ${model} ${pathResults}/gene$a/deltaModel.bin 
+        #./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/delta.txt> ${MCMC}
+                #cp ${expData}.log.txt.Stones.txt ${pathResults}/gene$a/delta.txt 
+            	#cp ${model} ${pathResults}/gene$a/deltaModel.bin 
             	
         ./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/kappadelta.txt > ${MCMC}
                 cp ${expData}.log.txt.Stones.txt ${pathResults}/gene$a/kappadelta.txt

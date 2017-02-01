@@ -4,7 +4,7 @@
 
 #################################################################
 
-path="/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutive/BTReconstruct/"
+path="/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConstitiutive/BTReconstruct/"
 pathAncRecon=paste(path,"results/AncRecon/",sep="")
 pathData=paste(path,"data/",sep="")
 

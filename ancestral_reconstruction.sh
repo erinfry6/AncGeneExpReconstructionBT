@@ -43,6 +43,8 @@ export scriptversion=1  ## modify this if running multiple files at once
 
 ###########################################################
 
+## CREATING COMMAND FILES
+
 	## creates the command files to use or not use each evolutionary rate parameter
 
 	echo $command1 > ${pathCommands}/delta$scriptversion.txt
@@ -77,7 +79,7 @@ stones 100 10000' >> ${pathCommands}/kappa$scriptversion.txt
 	echo run >> ${pathCommands}/kappa$scriptversion.txt
 
 	echo 'Delta
-	Kappa
+Kappa
 Iterations 1010000
 AddMRCA Node-01 1 2 3 4 6 7 8 9 10 11 12 13 14 15
 AddMRCA Node-02 1 2 3 4 6
@@ -112,25 +114,26 @@ for a in {2..15}
 
 	awk -v a="$a" '{print $1,$a}' ${pathData}/${Expressiondata} > ${expData}
 
+## number=$(grep -n "string" filename | grep -Eo '^[^:]+')	
 
 	if [[ $choice == 4 ]]; then
 	cp ${pathResults}/gene$a/kappadeltaModel.bin ${pathTemporary}/model$scriptversion.bin
-	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/kappadelta$scriptversion.txt | awk 'NR >=82' > ${pathRecon}/gene$a.txt
+	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/kappadelta$scriptversion.txt | awk 'NR >=93' > ${pathRecon}/gene$a.txt
 
 	elif [[ $choice == 3 ]]; then
 	cp ${pathResults}/gene$a/noneModel.bin ${pathTemporary}/model$scriptversion.bin
-	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/none$scriptversion.txt | awk 'NR >=82' > ${pathRecon}/gene$a.txt
+	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/none$scriptversion.txt | awk 'NR >=91' > ${pathRecon}/gene$a.txt
 
 
 	elif [[ $choice == 2 ]]; then
 	cp ${pathResults}/gene$a/kappaModel.bin ${pathTemporary}/model$scriptversion.bin
-	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/kappa$scriptversion.txt | awk 'NR >=82' > ${pathRecon}/gene$a.txt
+	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/kappa$scriptversion.txt | awk 'NR >=92' > ${pathRecon}/gene$a.txt
 
 
 	#or else its delta
 	else 
 	cp ${pathResults}/gene$a/deltaModel.bin ${pathTemporary}/model$scriptversion.bin
-	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/delta$scriptversion.txt | awk 'NR >=82' > ${pathRecon}/gene$a.txt
+	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/delta$scriptversion.txt | awk 'NR >=92' > ${pathRecon}/gene$a.txt
 
 	fi
 	done
