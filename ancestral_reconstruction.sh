@@ -5,28 +5,36 @@
 
 ###########################################################
 
-export path=/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutive/BTReconstruct ##full absolute path to main directory
+export path=/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConstitiutive/BTReconstruct ##full absolute path to main directory
 
 	export pathData=${path}/data
 	export pathScripts=${path}/scripts
 	export pathResults=${path}/results
-	export pathTemporary=${pathResults}/temporary
+	export pathTemp=${pathResults}/temporary
+	export pathModelResults=${path}/results/Model
 	export pathCommands=${pathScripts}/commands
+	export pathSSSResults=${path}/results/ARSSS
+	export pathRecon=${pathResults}/AncRecon
 
 ###########################################################
 
 	## make directory to store the reconstructions
 	
-	if [ -e ${pathResults}/AncRecon ]; then
-   	echo 'AncRecon already here'
+	if [ -e ${pathRecon} ]; then
+   	echo 'AncRecon dir already here'
     else
-    mkdir ${pathResults}/AncRecon
+    mkdir ${pathRecon}
+    fi
+ 	
+ 	## make directory to store the results from the stepping stone sampler
+	if [ -e ${pathSSSResults} ]; then
+   	echo 'SSS Results dir already here'
+    else
+    mkdir ${pathSSSResults}
     fi
 
-	export pathRecon=${pathResults}/AncRecon
 
 ###########################################################
-
 	## the first command is the file with all gene expression data, the second is the phylogenetic tree with distances
 	## the next two are the two commands needed to run BayesTraits (for continuous walk MCMC, 4 and 2, respectively)
 
@@ -38,8 +46,9 @@ export path=/Users/lynchlab/Desktop/ErinFry/BrainTranscription/BrainConstitiutiv
 ## if running multiple of these files at once, make sure to modify scriptversion to be a different number in each script to avoid creating the same numbered files
 
 export scriptversion=1  ## modify this if running multiple files at once
-	export expData=${pathTemporary}/singlegene$scriptversion.txt
-	export MCMC=${pathTemporary}/MCMC$scriptversion.txt
+	export singleexpression=${pathTemp}/singlegene$scriptversion.txt
+	export MCMC=${pathTemp}/MCMC$scriptversion.txt
+	export commandfile=${pathCommands}/step2command$scriptversion.txt
 
 ###########################################################
 
@@ -47,54 +56,23 @@ export scriptversion=1  ## modify this if running multiple files at once
 
 	## creates the command files to use or not use each evolutionary rate parameter
 
-	echo $command1 > ${pathCommands}/delta$scriptversion.txt
-	echo $command1 > ${pathCommands}/kappa$scriptversion.txt
-	echo $command1 > ${pathCommands}/kappadelta$scriptversion.txt
-	echo $command1 > ${pathCommands}/none$scriptversion.txt
-	echo $command2 >> ${pathCommands}/delta$scriptversion.txt
-	echo $command2 >> ${pathCommands}/kappa$scriptversion.txt
-	echo $command2 >> ${pathCommands}/kappadelta$scriptversion.txt
-	echo $command2 >> ${pathCommands}/none$scriptversion.txt
+	echo $command1 > ${commandfile}
+	echo $command2 >> ${commandfile}
 
 ## specifies how many iterations, the burnin period, and the number of stones to sample
 ## it is important to read the AddMRCA instructions in the BayesTraits manual and modify the label and node numbers to specify
 ## which common ancestor you are reconstructing, do so for all 4 models
 
-	echo 'Delta
-Iterations 1010000
-AddMRCA Node-01 1 2 3 4 6 7 8 9 10 11 12 13 14 15
-AddMRCA Node-02 1 2 3 4 6
-Burnin 10000
-stones 100 10000' >> ${pathCommands}/delta$scriptversion.txt
-	echo LoadModels ${pathTemporary}/model$scriptversion.bin >> ${pathCommands}/delta$scriptversion.txt
-	echo run >> ${pathCommands}/delta$scriptversion.txt
-
-	echo 'Kappa
-Iterations 1010000
-AddMRCA Node-01 1 2 3 4 6 7 8 9 10 11 12 13 14 15
-AddMRCA Node-02 1 2 3 4 6
-Burnin 10000
-stones 100 10000' >> ${pathCommands}/kappa$scriptversion.txt
-	echo LoadModels ${pathTemporary}/model$scriptversion.bin >> ${pathCommands}/kappa$scriptversion.txt
-	echo run >> ${pathCommands}/kappa$scriptversion.txt
-
-	echo 'Delta
-Kappa
-Iterations 1010000
-AddMRCA Node-01 1 2 3 4 6 7 8 9 10 11 12 13 14 15
-AddMRCA Node-02 1 2 3 4 6
-Burnin 10000
-stones 100 10000' >> ${pathCommands}/kappadelta$scriptversion.txt
-	echo LoadModels ${pathTemporary}/model$scriptversion.bin >> ${pathCommands}/kappadelta$scriptversion.txt
-	echo run >> ${pathCommands}/kappadelta$scriptversion.txt
-
 echo 'Iterations 1010000
-AddMRCA Node-01 1 2 3 4 6 7 8 9 10 11 12 13 14 15
-AddMRCA Node-02 1 2 3 4 6
+AddTag Tag-PointA hsa_br_M_1 hsa_br_M_2 hsa_br_M_3 hsa_br_M_4 hsa_br_F_1 
+AddTag Tag-PointB hsa_br_M_1 hsa_br_M_2 hsa_br_M_3 hsa_br_M_4 hsa_br_F_1 ptr_br_M_3 ptr_br_M_2 ptr_br_M_5 ptr_br_M_1 ptr_br_M_4 ptr_br_F_1 ppa_br_M_1 ppa_br_F_1 ppa_br_F_2 
+AddMRCA AncHomo Tag-PointA
+AddMRCA AncHominini Tag-PointB
+Prior AncState-1 uniform 0 15731
 Burnin 10000
-stones 100 10000' >> ${pathCommands}/none$scriptversion.txt
-	echo LoadModels ${pathTemporary}/model$scriptversion.bin >> ${pathCommands}/none$scriptversion.txt
-	echo run >> ${pathCommands}/none$scriptversion.txt
+stones 100 10000' >> ${commandfile}
+	echo LoadModels ${pathTemp}/model$scriptversion.bin >> ${commandfile}
+	echo run >> ${commandfile}
 
 
 ###########################################################
@@ -107,33 +85,13 @@ stones 100 10000' >> ${pathCommands}/none$scriptversion.txt
 	## then, depending on which model, copy the model file created in the first step and run BayesTraits again, informed by the model file to
 	## reconstruct ancestral transcriptional state
 
-for a in {2..15}
+for a in {2..13080}
 	do
 	
-	choice=$(awk -v a="$a" '{print $a}' ${pathData}/modelchoice.txt)
+	awk -v a="$a" '{print $1,$a}' ${pathData}/${Expressiondata} > ${singleexpression}
+	
+	cp ${pathModelResults}/gene$a.bin ${pathTemp}/model$scriptversion.bin
+	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${singleexpression} <${commandfile} | awk 'NR >=91' > ${pathRecon}/gene$a.txt
+	cp ${singleexpression}.log.txt.Stones.txt ${pathSSSResults}/gene$a.txt
 
-	awk -v a="$a" '{print $1,$a}' ${pathData}/${Expressiondata} > ${expData}
-
-## number=$(grep -n "string" filename | grep -Eo '^[^:]+')	
-
-	if [[ $choice == 4 ]]; then
-	cp ${pathResults}/gene$a/kappadeltaModel.bin ${pathTemporary}/model$scriptversion.bin
-	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/kappadelta$scriptversion.txt | awk 'NR >=93' > ${pathRecon}/gene$a.txt
-
-	elif [[ $choice == 3 ]]; then
-	cp ${pathResults}/gene$a/noneModel.bin ${pathTemporary}/model$scriptversion.bin
-	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/none$scriptversion.txt | awk 'NR >=91' > ${pathRecon}/gene$a.txt
-
-
-	elif [[ $choice == 2 ]]; then
-	cp ${pathResults}/gene$a/kappaModel.bin ${pathTemporary}/model$scriptversion.bin
-	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/kappa$scriptversion.txt | awk 'NR >=92' > ${pathRecon}/gene$a.txt
-
-
-	#or else its delta
-	else 
-	cp ${pathResults}/gene$a/deltaModel.bin ${pathTemporary}/model$scriptversion.bin
-	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${expData} <${pathCommands}/delta$scriptversion.txt | awk 'NR >=92' > ${pathRecon}/gene$a.txt
-
-	fi
 	done

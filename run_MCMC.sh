@@ -10,10 +10,10 @@ export path=/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConst
 	export pathData=${path}/data
 	export pathScripts=${path}/scripts
 	export pathResults=${path}/results
+	export pathTemp=${pathResults}/temporary
 	export pathMCMCResults=${path}/results/MCMC
 	export pathModelResults=${path}/results/Model
 	export pathSSSResults=${path}/results/SSS
-	export pathTemp=${pathResults}/temporary
 	export pathCommands=${pathScripts}/commands
 	
 ###########################################################
