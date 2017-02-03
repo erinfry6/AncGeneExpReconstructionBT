@@ -1,9 +1,10 @@
 ## this script reconstructs the ancestral state, or transcription level, of your transcriptome
 ## created by Erin Fry (efry@uchicago.edu)
-## User should have BayesTraits installed
-## Non-indented lines should be evaluated for modification speficic to user's purpose
+## Non-indented lines should be evaluated for modification specific to user's purpose
 
 ###########################################################
+
+	## set directory paths
 
 export path=/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConstitiutive/BTReconstruct ##full absolute path to main directory
 
@@ -43,7 +44,7 @@ export path=/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConst
 	command1=$3
 	command2=$4
 
-## if running multiple of these files at once, make sure to modify scriptversion to be a different number in each script to avoid creating the same numbered files
+## if running multiple scripts at once, make sure to modify scriptversion to be a different number in each script to avoid creating the same numbered files
 
 export scriptversion=1  ## modify this if running multiple files at once
 	export singleexpression=${pathTemp}/singlegene$scriptversion.txt
@@ -60,8 +61,7 @@ export scriptversion=1  ## modify this if running multiple files at once
 	echo $command2 >> ${commandfile}
 
 ## specifies how many iterations, the burnin period, and the number of stones to sample
-## it is important to read the AddMRCA instructions in the BayesTraits manual and modify the label and node numbers to specify
-## which common ancestor you are reconstructing, do so for all 4 models
+## it is important to read AGERinstructions.txt and the BayesTraits manual and modify the label and node numbers to specify which ancestral node to reconstruct
 
 echo 'Iterations 1010000
 AddTag Tag-PointA hsa_br_M_1 hsa_br_M_2 hsa_br_M_3 hsa_br_M_4 hsa_br_F_1 
@@ -79,11 +79,9 @@ stones 100 10000' >> ${commandfile}
 
 ## for loop goes through each of the genes specified in { .. }
 
-	## first, specify which model should be used for each gene
-	## make a temporary file to contain only gene expression from the one gene, then creates the directory for that gene
-	
-	## then, depending on which model, copy the model file created in the first step and run BayesTraits again, informed by the model file to
-	## reconstruct ancestral transcriptional state
+	## make a temporary file to contain only gene expression from the one gene
+	## copy the model file created in the first step and run BayesTraits again, informed by the model file to reconstruct ancestral transcriptional state
+	## copy the stepping stone output to save likelihood information about the chain
 
 for a in {2..13080}
 	do

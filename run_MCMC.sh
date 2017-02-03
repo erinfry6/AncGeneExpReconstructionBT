@@ -1,9 +1,10 @@
 ## this script runs the BayesTraits program given a set of commands for the genes indicated in the for loop
 ## created by Erin Fry (efry@uchicago.edu)
-## User should have BayesTraits installed in the main path directory
 ## Non-indented lines should be evaluated for modification specific to the user's purpose
 
 ###########################################################
+
+	## set directory paths
 
 export path=/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConstitiutive/BTReconstruct ##full absolute path to main directory
 
@@ -64,7 +65,7 @@ export path=/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConst
 	command1=$3
 	command2=$4
 
-## if running multiple of these files at once, make sure to modify scriptversion to be a different number in each script to avoid creating the same numbered files
+## if running multiple scripts at once, make sure to modify scriptversion to be a different number in each script to avoid creating the same numbered files
 
 export scriptversion=1  ## modify this if running multiple files at once
 	export singleexpression=${pathTemp}/singlegene$scriptversion.txt

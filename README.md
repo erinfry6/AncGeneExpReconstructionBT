@@ -32,7 +32,7 @@ BayesTraits Manual: http://www.evolution.rdg.ac.uk/BayesTraitsV2.0Files/TraitsV2
 
 #################################################################################
 
-## Format input files
+## Input files Formats
 
 The following input files are required for this analysis:
 
@@ -45,12 +45,13 @@ The following input files are required for this analysis:
 
 ## Modify the scripts
 
- - The top of each script (all .sh and .R files) must be modified to contain the proper directory path for the home directory
+ - The top of each script (all .sh and .R files) must be modified to contain the proper home directory path
 
  - The numbering will begin at 2, not 1. For steps 1 and 3, modify the .sh file for loops at the end of the script to run the analysis on the desired number of genes.
 
- - It is important to look at the command files being created in run_MCMC.sh. If you would like to modify the command files, you will need to manually change the command file writing scripts in the 'CREATING COMMAND FILES' section.
+ - If you would like to modify the commands given to BayesTraits, you will need to manually change the command file writing scripts in the 'CREATING COMMAND FILES' section of `run_MCMC.sh` and `ancestral_reconstruction.sh`. 
 
+ - To specify which ancestral nodes are reconstructed, modify `ancestral_reconstruction.sh`'s command section, which is at the bottom in the for loop. Follow the instructions in AGERinstructions.txt
 
 #################################################################################
 
@@ -66,13 +67,7 @@ The following input files are required for this analysis:
 4 (continuous walk) and 2 (MCMC) are the two commands necessary to run BayesTraits random walk MCMC algorithm
 
 
-#### 2) find_best_model.sh - This script collects the likelihoods from the first step and identifies which model best fits the trait's evolution using `find_Likelihoods.R`
-```
-./find_best_model.sh
-```
-
-
-#### 3) ancestral_reconstruction.sh - Reconstructs the posterior probability distribution of ancestral states at specified internal nodes using the best model for the gene's evolution. 
+#### 2) ancestral_reconstruction.sh - Reconstructs the posterior probability distribution of ancestral states at specified internal nodes using the best model for the gene's evolution. 
    These nodes must be specified in the CREATING COMMAND FILES section. See BayesTraits Manual for instructions.
 ```
 ./ancestral_reconstruction.sh Expression_Data.txt SampleTree.tree 4 2
@@ -81,7 +76,7 @@ The following input files are required for this analysis:
 _All four inputs following the bash script should be the exact same as in step 1._
 
 
-#### 4) ID_divergent_genes.sh - Calculates the percent divergence between the two posterior probability distributions of two ancestral states using `Ancestral_Analysis.R`
+#### 3) ID_divergent_genes.sh - Calculates the percent divergence between the two posterior probability distributions of two ancestral states using `Ancestral_Analysis.R`
 
 ```
 ./ID_divergent_genes.sh
