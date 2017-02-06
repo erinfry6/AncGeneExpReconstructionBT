@@ -12,9 +12,9 @@ export path=/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConst
 	export pathScripts=${path}/scripts
 	export pathResults=${path}/results
 	export pathTemp=${pathResults}/temporary
-	export pathMCMCResults=${path}/results/MCMC
-	export pathModelResults=${path}/results/Model
-	export pathSSSResults=${path}/results/SSS
+	export pathMCMCResults=${pathResults}/MCMC
+	export pathModelResults=${pathResults}/Model
+	export pathSSSResults=${pathResults}/SSS
 	export pathCommands=${pathScripts}/commands
 	
 ###########################################################
@@ -86,7 +86,9 @@ export scriptversion=1  ## modify this if running multiple files at once
 
 echo 'Iterations 1010000
 Burnin 10000
-stones 100 10000' >> ${commandfile}
+stones 100 10000
+Kappa
+Delta' >> ${commandfile}
 echo SaveModels $model >> ${commandfile}
 echo run >> ${commandfile}
 
