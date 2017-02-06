@@ -53,12 +53,15 @@ The following input files are required for this analysis:
 
  - To specify which ancestral nodes are reconstructed, modify `ancestral_reconstruction.sh`'s command section, which is at the bottom in the for loop. Follow the instructions in AGERinstructions.txt
 
+ - Modify Ancestral_Analysis.R the inputs of the DistDiv function in the for loop to include the two columns of the files with the reconstructed node names
+
 #################################################################################
 
 ## Run the Bayesian Ancestral Transcriptome Reconstruction Scripts
 
 
-#### 1) run_MCMC.sh - Run the MCMC chain under the four evolutionary rate parameter models relavent to gene expression. 
+#### 1) run_MCMC.sh - Run the MCMC chain under the specified evolutionary rate parameters relavent to gene expression. 
+In our experience, incorporating both Kappa and Delta (see BayesTraits manual) decreases the variance of reconstructions and increases the log likelihood of the chain.
 
 ```
 ./run_MCMC.sh Expression_Data.txt SampleTree.tree 4 2
@@ -82,7 +85,7 @@ _All four inputs following the bash script should be the exact same as in step 1
 ./ID_divergent_genes.sh
 ```
 
-_Requires the R package 'dplyr'._
+_Requires the R package 'dplyr'. Be sure to modify Ancestral_Analysis.R as instructed._
 
 #################################################################################
 
