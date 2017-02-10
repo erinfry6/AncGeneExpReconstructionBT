@@ -1,0 +1,231 @@
+---
+title: "Ancestral_Recons"
+author: "Erin Fry"
+date: "October 3, 2016"
+output: html_document
+---
+# Analyze Ancestral Gene Expression Reconstructions (AGERs)
+
+**In this script you can:**
+
+ - Examine the MRCA posterior probability distributions after reconstructing ancestral expression
+ - Identify converged reconstructions
+ - Find the divergence between the two reconstructions
+ - Identify genes with expression shifts
+ - Write the file for Fossilization step
+ - Summarize transcriptomic evolution between two ancestral nodes
+
+```{r set up paths and load libraries, echo=FALSE}
+
+path="/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConstitiutive/BTReconstruct/"
+pathResults=paste(path,"results/",sep="")
+pathAncRecon=paste(pathResults,"AncRecon/",sep="")
+pathAncReconLimit=paste(pathResults,"AncReconLimit/",sep="")
+
+library(dplyr)
+library("ggplot2")
+```
+
+
+```{r Load AGER and gene information, echo=FALSE}
+setwd(pathAncRecon)
+options(stringsAsFactors = FALSE)
+ldf <- list() # creates a list
+listcsv<-paste("gene",as.character((order(dir(pattern = "*.txt")))),".txt", sep="")
+
+for (k in 1:2500){ 
+  ldf[[k]]<- read.csv(listcsv[k], sep='\t') # read files in listcsv into the ldf list
+}
+
+#first let's import the gene names to we can include them in our images
+setwd("/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConstitiutive")
+genenames<-read.csv("GeneNamesandcodes.txt",header=T, sep='\t')
+
+
+```
+
+## Write functions to be used throughout the analysis
+
+```{r set divergence and PPD plot functions}
+#The function DistDiv finds the frequency at which two distributions are different from one another
+#'dylpr' is a required package for this function
+#the first two arguments are the distributions of interest
+#the second is the number of bins you would like to divide the data into, default 100
+
+DistDiv<-function(dist1,dist2,nbin=100) {
+
+#first, define the bins each distribution will be broken up into
+  minimum=(min(dist1, dist2)) #minimum value of both distributions
+  maximum=(max(dist1, dist2)) #maximum value of both distributions
+  bins <- seq(minimum, maximum, by =(maximum-minimum)/nbin )  #create nbins from the minimum to maximum observed values
+
+#Create a data frame to contain the number of counts from each distribution in each bin
+  #the hist(plot=FALSE) function creates a list containing count information in each bin, speficied above
+  counts<-as.data.frame(cbind(hist(dist1, plot=FALSE, breaks=bins)$counts,hist(dist2, plot=FALSE, breaks=bins)$counts))
+  colnames(counts)<- c("Dist1Counts", "Dist2Counts") #set the column names
+  
+#find the number of overlapping counts across all bins
+  ##create new column containing the minimum count of the two distributions
+  ##this minimum count is equal to half of the overlap between the two in that bin
+  counts$overlap<-apply(counts[,1:2],1,min)  #Take the minimum count for each bin
+  
+  #multiple the overlap by two to equal the percent overlap between the two distributions
+  #then divide by the total number of observations to get the proportion overlap between the two distributions
+  return(1-(2*sum(counts$overlap))/sum(counts$Dist1Counts,counts$Dist2Counts))    }
+
+
+viewPPDs<-function(recons,genelist,lastit=1000,nbins=100)
+  for (i in genelist){  #for each of these genes
+  gene<- recons[[i]][1:lastit,]  #create a new file for only that gene
+    minimum=(min(gene$Est.AncHomo...1, gene$Est.AncHominini...1)) #minimum estimated value
+    maximum=(max(gene$Est.AncHomo...1, gene$Est.AncHominini...1)) #maximum estimated
+    breakby= (maximum-minimum)/nbins  #size of bins
+    bins <- seq(minimum, maximum, by =breakby)  #set the bins for this gene
+  hist(gene$Est.AncHomo...1,
+       main= paste("Gene #", i,"-", genenames[i,3],"- Percent Divergence:",percent.divergent[i]),  #title of the image
+       xlab="Estimated Expression in Transcripts Per Million", 
+       ylab="Number of Samples", 
+       col="#af8dc3", breaks=bins, xlim=c(minimum,maximum))
+  hist(gene$Est.AncHominini...1, add=T, col="#7fbf7b", breaks=bins)
+  hist(gene$Est.AncHomo...1, border="black", breaks=bins, add=T)
+  #legend(300,300, c("Human-Chimpanzee", "Human"), col=c("#7fbf7b", "#af8dc3"), lwd=10, border=NULL)
+}
+
+
+
+boxplotPPDs<-function(recons,genelist,lastit=1000)
+for (i in genelist){  #for each of these genes
+  gene<- recons[[i]][1:lastit,]
+boxplot(as.numeric(gene$Est.AncHomo...1),as.numeric(gene$Est.AncHominini...1), 
+        notch=T, outline = T, cex.axis = 0.5, 
+        ylab="Estimated Expression in Transcript per Million", 
+        names = c("Human-Chimpanzee", "Human Ancestral"), 
+        main= paste("Gene #", i,"-", genenames[i,3],"- Percent Divergence:",percent.divergent[i]),  #title of the image
+        col=c("#7fbf7b", "#af8dc3"))
+}
+
+```
+
+## Identify genes that successfully reconstructed
+You can do this because when a gene does not reconstruct, the ancestral HC node has a much larger standard deviation than the human ancestor. Genes that did reconstruct will have similar standard deviations.
+
+```{r check reconstruction success}
+## the HC ancestral reconstruction generally has a higher standard deviation. If it is too much larger than the ancHuman the chain failed to reconstruct
+
+## find the fold difference in standard deviation between the two reconstructions
+
+foldSD<-vector() ## empty vector to store results
+  for (i in 1:length(ldf)){
+foldSD[i]<-sd(ldf[[i]]$Est.AncHominini...1[1:1000])/sd(ldf[[i]]$Est.AncHomo...1[1:1000])
+}
+
+```
+
+## Calculate divergence between the two AGERs
+```{r calculate and examine gene expression divergence}
+
+percent.divergent<-vector(length=length(ldf)) #create empty vectors to contain percent divergence of each gene
+
+for (i in 1:length(ldf)){  #for each of these genes
+  gene<- ldf[[i]][-nrow(ldf[[i]]),]  #create a new file for only that gene
+  
+  #run the function distdiv for the human and H-C post prob distributions
+  percent.divergent[i]<-DistDiv(gene$Est.AncHomo...1, gene$Est.AncHominini...1)
+}
+
+```
+
+## Find the Mean of the Posterior Probability Distributions
+```{r Mean and Confidence interval for each gene MRCA}
+#find the mean of the ancestral estimations, and for fun, the lower and upper confidence intervals
+MeanNode1<-vector(length=length(ldf)) # the mean
+UCINode1<-vector(length=length(ldf)) # upper limit of Confidence Interval
+LCINode1<-vector(length=length(ldf)) # lower limit of CI
+MeanNode2<-vector(length=length(ldf)) # the mean
+UCINode2<-vector(length=length(ldf)) # upper limit of Confidence Interval
+LCINode2<-vector(length=length(ldf)) # lower limit of CI
+
+for (i in 1:length(ldf)){
+  MeanNode1[i]<-mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHominini...1)
+  UCINode1[i]<- mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHominini...1 )+ 2*sd(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHominini...1 )
+  LCINode1[i]<- mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHominini...1 )- 2*sd(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHominini...1 )
+
+  MeanNode2[i]<-mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHomo...1 )
+  UCINode2[i]<- mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHomo...1 )+ 2*sd(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHomo...1 )
+  LCINode2[i]<- mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHomo...1 )- 2*sd(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHomo...1 )
+  
+  }
+
+```
+
+
+### Combine AGER qualities and gene information into Summary file
+```{r Create summary file, echo=FALSE}
+## combine gene information, divergence data, convergence data, and means and confidence intervals into one dataframe
+Summary<-cbind(genenames[1:length(ldf),], percent.divergent,foldSD,LCINode1,MeanNode1,UCINode1,LCINode2,MeanNode2,UCINode2)
+
+head(Summary)
+
+```
+
+## Examine the divergence of the AGERs for all reconstructed expressed genes
+
+```{r percent divergences after eliminate failures and not expressed}
+
+reconsgenes<-filter(Summary,foldSD<10,MeanNode1>2 | MeanNode2>2)
+
+hist((reconsgenes$percent.divergent*100), #create histogram of percent divergence for tested genes
+       main= "Percent Divergence in Posterior Probaility Distributions",#title
+       xlab="Percent Posterior Probability Divergence of Reconstructed Ancestral Transcriptional States", 
+       ylab="Number of Genes", cex.lab=1.3,
+       col="#800000", breaks=100)
+
+
+# define divergence cutoffs
+Summary$DivLevel <- cut(Summary$percent.divergent, c(0, .7, .8, .9, 1))
+# Reverse the levels and generate some labels for the legend
+Summary$labels <- factor(Summary$DivLevel, levels = rev(levels(Summary$DivLevel)),
+                           labels = c('>90%', '80-90%',
+                                       '70-80%','<70%'))
+## split the data into layers
+df_layer_1 <- Summary[ Summary$labels =="<70%",]
+df_layer_70 <- Summary[ Summary$labels =="70-80%",]
+df_layer_80 <- Summary[ Summary$labels =="80-90%",]
+df_layer_90 <- Summary[ Summary$labels ==">90%",]
+
+
+# plot the mean AGERs by layer
+p<-ggplot(data=Summary, mapping=aes(x=(MeanNode1),y=(MeanNode2))) + 
+  theme_bw() +
+  theme(plot.title= element_text(size=20, face="bold"), axis.title.x=element_text(size=20),axis.title.y=element_text(size=20)) +
+  #ggtitle("Ancestral Transcript Levels and\n Evidence for Evolution on the Human Lineage") +
+  labs( x="AncHominini TPM", y="AncHomo TPM", face="bold", size=20) +
+  geom_point(data=df_layer_1, colour="#333333", alpha=0.3) +
+  geom_point(data=df_layer_70, colour="#c994c7", alpha=1) +
+  geom_point(data=df_layer_80, colour="#dd1c77", alpha=1) +
+  geom_point(data=df_layer_90, colour="#800000", alpha=1) +
+  geom_abline(intercept=0,slope=1) + 
+  #scale_y_log10(limits=c(0.00001,10000)) + scale_x_log10(limits=c(0.00001,100000)) +
+  scale_y_log10() + scale_x_log10() +
+  geom_vline(xintercept=sqrt(0.2), alpha=.5) + geom_hline(yintercept=sqrt(0.2), alpha=0.5)
+p
+
+```
+
+
+
+## Identify genes that converged, are expressed, and have expression shifts
+
+**The method identified `r nrow(filter(Summary,percent.divergent>0.7,foldSD<10,MeanNode1>2 | MeanNode2>2))` genes with expression shifts in the human lineage.**
+
+```{r ID expression shifts}
+
+shiftgenes<-filter(Summary,percent.divergent>0.7,foldSD<10,MeanNode1>2 | MeanNode2>2)
+
+viewPPDs(ldf,shiftgenes$gene_number)
+
+boxplotPPDs(ldf,shiftgenes$gene_number)
+
+
+``` 
+

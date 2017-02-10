@@ -12,9 +12,9 @@ export path=/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConst
 	export pathScripts=${path}/scripts
 	export pathResults=${path}/results
 	export pathTemp=${pathResults}/temporary
-	export pathModelResults=${path}/results/Model
+	export pathModelResults=${pathResults}/Model
 	export pathCommands=${pathScripts}/commands
-	export pathSSSResults=${path}/results/ARSSS
+	export pathSSSResults=${pathResults}/ARSSS
 	export pathRecon=${pathResults}/AncRecon
 
 ###########################################################
@@ -70,7 +70,9 @@ AddMRCA AncHomo Tag-PointA
 AddMRCA AncHominini Tag-PointB
 Prior AncState-1 uniform 0 15731
 Burnin 10000
-stones 100 10000' >> ${commandfile}
+stones 100 10000
+Kappa
+Delta' >> ${commandfile}
 	echo LoadModels ${pathTemp}/model$scriptversion.bin >> ${commandfile}
 	echo run >> ${commandfile}
 
@@ -83,13 +85,13 @@ stones 100 10000' >> ${commandfile}
 	## copy the model file created in the first step and run BayesTraits again, informed by the model file to reconstruct ancestral transcriptional state
 	## copy the stepping stone output to save likelihood information about the chain
 
-for a in {2..13080}
+for a in {2..3270}
 	do
 	
 	awk -v a="$a" '{print $1,$a}' ${pathData}/${Expressiondata} > ${singleexpression}
 	
 	cp ${pathModelResults}/gene$a.bin ${pathTemp}/model$scriptversion.bin
-	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${singleexpression} <${commandfile} | awk 'NR >=91' > ${pathRecon}/gene$a.txt
+	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${singleexpression} <${commandfile} | awk 'NR >=93' > ${pathRecon}/gene$a.txt
 	cp ${singleexpression}.log.txt.Stones.txt ${pathSSSResults}/gene$a.txt
 
 	done
