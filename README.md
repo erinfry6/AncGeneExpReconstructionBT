@@ -8,7 +8,7 @@ They will:
 
 2) Identify genes with expression shifts in the lineage of interest by comparing the posterior probability distributions of the ancestral reconstructions
 
-
+3) Simulate gene expression similar to your data. After simulations are created, one can rerun the analysis.
 
 ## Set up directories
 
@@ -83,6 +83,10 @@ _All four inputs following the bash script should be the exact same as in step 1
 
 _Requires the R package 'dplyr'. Be sure to modify Ancestral_Analysis.R as instructed._
 
+
+## Simulate gene expression evolution across your tree.
+
+**Using the `SimulateAGER.Rmd` file, you may simulate data that matches your data's expression patterns.**
 
 
 ## Troubleshooting on test example files
