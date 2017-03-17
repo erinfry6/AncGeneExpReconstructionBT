@@ -1,24 +1,19 @@
 ---
-title: "Ancestral_Recons"
+title: "Analyze Ancestral Gene Expression Reconstructions (AGERs)"
 author: "Erin Fry"
 date: "October 3, 2016"
-output: html_document
+output:
+  html_document:
+    toc: true
+    self_contained: false
 ---
-# Analyze Ancestral Gene Expression Reconstructions (AGERs)
 
-**In this script you can:**
+**This script analyzes tha ancestral gene expression reconstructions from BayesTraits from two ancestral nodes to identify expression shifts.**
 
- - Examine the MRCA posterior probability distributions after reconstructing ancestral expression
- - Identify converged reconstructions
- - Find the divergence between the two reconstructions
- - Identify genes with expression shifts
- - Write the file for Fossilization step
- - Summarize transcriptomic evolution between two ancestral nodes
-
-```{r set up paths and load libraries, echo=FALSE}
+```{r set up paths and load libraries, warning=FALSE, echo=FALSE}
 
 path="/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConstitiutive/BTReconstruct/"
-pathResults=paste(path,"results/",sep="")
+pathResults=paste(path,"resultsSQRT/",sep="")
 pathAncRecon=paste(pathResults,"AncRecon/",sep="")
 pathAncReconLimit=paste(pathResults,"AncReconLimit/",sep="")
 
@@ -33,11 +28,18 @@ options(stringsAsFactors = FALSE)
 ldf <- list() # creates a list
 listcsv<-paste("gene",as.character((order(dir(pattern = "*.txt")))),".txt", sep="")
 
-for (k in 1:2500){ 
+## for each gene, read into ldf collection of dataframes
+## but first set the total number of rows you expect to have in each file so the code will warn you if reconstructions failed
+expectedrows<-1001
+
+for (k in 1:length(listcsv)){ 
   ldf[[k]]<- read.csv(listcsv[k], sep='\t') # read files in listcsv into the ldf list
+  if (nrow(ldf[[k]])!=expectedrows){
+    warning(paste("The reconstruction of gene number", k, "failed. Check file"))
+  }
 }
 
-#first let's import the gene names to we can include them in our images
+## import the gene information to we can include them in our analysis
 setwd("/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConstitiutive")
 genenames<-read.csv("GeneNamesandcodes.txt",header=T, sep='\t')
 
@@ -73,8 +75,18 @@ DistDiv<-function(dist1,dist2,nbin=100) {
   #then divide by the total number of observations to get the proportion overlap between the two distributions
   return(1-(2*sum(counts$overlap))/sum(counts$Dist1Counts,counts$Dist2Counts))    }
 
+## for each sample, calculate the correlation between the two AGERs, use spearman because may not scale linearly
+calc_spearman<-function(recons,lastit=1000){
+  corr<-vector(length=length(recons)) #create empty vectors to contain percent divergence of each gene
+    for (i in 1:length(recons)){  #for each of these genes
+  gene<- recons[[i]][1:lastit,]  #create a new file for only that gene
+  corr[i]<-cor(gene$Est.AncHominini...1,gene$Est.AncHomo...1,method = "spearman")
+    } 
+  return(corr)}
 
-viewPPDs<-function(recons,genelist,lastit=1000,nbins=100)
+## view the AGERs for each gene in a list of genes, lastit (last iteration) is the number of iterations sampled in the chain
+
+viewPPDs<-function(recons,genelist,lastit=1000,nbins=100){
   for (i in genelist){  #for each of these genes
   gene<- recons[[i]][1:lastit,]  #create a new file for only that gene
     minimum=(min(gene$Est.AncHomo...1, gene$Est.AncHominini...1)) #minimum estimated value
@@ -82,31 +94,59 @@ viewPPDs<-function(recons,genelist,lastit=1000,nbins=100)
     breakby= (maximum-minimum)/nbins  #size of bins
     bins <- seq(minimum, maximum, by =breakby)  #set the bins for this gene
   hist(gene$Est.AncHomo...1,
-       main= paste("Gene #", i,"-", genenames[i,3],"- Percent Divergence:",percent.divergent[i]),  #title of the image
-       xlab="Estimated Expression in Transcripts Per Million", 
+       main= paste("Gene #", i,"-", genenames[i,3],"- Percent Divergence:",Summary$percent.divergent[i]),  #title of the image
+       xlab="Estimated Expression in sqrt(TPM)", 
        ylab="Number of Samples", 
        col="#af8dc3", breaks=bins, xlim=c(minimum,maximum))
   hist(gene$Est.AncHominini...1, add=T, col="#7fbf7b", breaks=bins)
   hist(gene$Est.AncHomo...1, border="black", breaks=bins, add=T)
   #legend(300,300, c("Human-Chimpanzee", "Human"), col=c("#7fbf7b", "#af8dc3"), lwd=10, border=NULL)
-}
+  } }
+
+viewPPDsmaroon<-function(recons,genelist,lastit=1000,nbins=100){
+  for (i in genelist){  #for each of these genes
+  gene<- recons[[i]][1:lastit,]  #create a new file for only that gene
+    minimum=(min(gene$Est.AncHomo...1, gene$Est.AncHominini...1)) #minimum estimated value
+    maximum=(max(gene$Est.AncHomo...1, gene$Est.AncHominini...1)) #maximum estimated
+    breakby= (maximum-minimum)/nbins  #size of bins
+    bins <- seq(minimum, maximum, by =breakby)  #set the bins for this gene
+  hist(gene$Est.AncHomo...1,
+       main= paste("Gene #", i,"-", genenames[i,3],"- Percent Divergence:",Summary$percent.divergent[i]),  #title of the image
+       xlab="Estimated Expression in sqrt(TPM)", 
+       ylab="Number of Samples", 
+       col="#737373", breaks=bins, xlim=c(minimum,maximum))
+  hist(gene$Est.AncHominini...1, add=T, col="#800000", breaks=bins)
+  hist(gene$Est.AncHomo...1, border="black", breaks=bins, add=T)
+  #legend(300,300, c("Human-Chimpanzee", "Human"), col=c("#7fbf7b", "#af8dc3"), lwd=10, border=NULL)
+} }
 
 
+## view the marginal distributions as a scatter plot
+viewMarginal<-function(recons,genelist,lastit=1000){
+  for (i in genelist){  #for each of these genes
+  gene<- recons[[i]][1:lastit,]  #create a new file for only that gene
+  minimum=(min(gene$Est.AncHomo...1, gene$Est.AncHominini...1)) #minimum estimated value
+  maximum=(max(gene$Est.AncHomo...1, gene$Est.AncHominini...1))
+  plot(gene$Est.AncHominini...1,gene$Est.AncHomo...1, xlab="Estimated TPM AncHominini",ylab="Estimated TPM AncHomo", xlim=c(0,maximum),ylim=c(0,maximum), main=paste("Gene #", i,"-", genenames[i,3],"- spearman corr:",Summary$Itcorrelation[i]))
+  abline(1,1)
+  }}
 
-boxplotPPDs<-function(recons,genelist,lastit=1000)
+## similar to above, another way of viewing the AGERs
+boxplotPPDs<-function(recons,genelist,lastit=1000){
 for (i in genelist){  #for each of these genes
   gene<- recons[[i]][1:lastit,]
 boxplot(as.numeric(gene$Est.AncHomo...1),as.numeric(gene$Est.AncHominini...1), 
         notch=T, outline = T, cex.axis = 0.5, 
         ylab="Estimated Expression in Transcript per Million", 
         names = c("Human-Chimpanzee", "Human Ancestral"), 
-        main= paste("Gene #", i,"-", genenames[i,3],"- Percent Divergence:",percent.divergent[i]),  #title of the image
+        main= paste("Gene #", i,"-", genenames[i,3],"- Percent Divergence:",Summary$percent.divergent[i]),  #title of the image
         col=c("#7fbf7b", "#af8dc3"))
-}
+} }
+
 
 ```
 
-## Identify genes that successfully reconstructed
+## Identify converged reconstructions
 You can do this because when a gene does not reconstruct, the ancestral HC node has a much larger standard deviation than the human ancestor. Genes that did reconstruct will have similar standard deviations.
 
 ```{r check reconstruction success}
@@ -117,11 +157,18 @@ You can do this because when a gene does not reconstruct, the ancestral HC node 
 foldSD<-vector() ## empty vector to store results
   for (i in 1:length(ldf)){
 foldSD[i]<-sd(ldf[[i]]$Est.AncHominini...1[1:1000])/sd(ldf[[i]]$Est.AncHomo...1[1:1000])
-}
+  }
+
+## What proportion of genes succesfully reconstructed
+length(which(foldSD<10))/length(ldf)
+
+hist(log(foldSD), main="AGERs Difference in Standard Deviation", xlab="log fold change in standard deviation between the AncHomini and AncHomo AGERS")
 
 ```
 
-## Calculate divergence between the two AGERs
+**`r (length(which(foldSD<10))/length(ldf))*100`% of genes successfully reconstructed**
+
+## Calculate divergence between the two reconstructions
 ```{r calculate and examine gene expression divergence}
 
 percent.divergent<-vector(length=length(ldf)) #create empty vectors to contain percent divergence of each gene
@@ -133,99 +180,152 @@ for (i in 1:length(ldf)){  #for each of these genes
   percent.divergent[i]<-DistDiv(gene$Est.AncHomo...1, gene$Est.AncHominini...1)
 }
 
+## find the correlation between the two reconstructions for each gene
+Itcorrelation<-calc_spearman(ldf)
+
 ```
 
-## Find the Mean of the Posterior Probability Distributions
+## Calculate the Mean of the Posterior Probability Distributions
 ```{r Mean and Confidence interval for each gene MRCA}
 #find the mean of the ancestral estimations, and for fun, the lower and upper confidence intervals
-MeanNode1<-vector(length=length(ldf)) # the mean
-UCINode1<-vector(length=length(ldf)) # upper limit of Confidence Interval
-LCINode1<-vector(length=length(ldf)) # lower limit of CI
-MeanNode2<-vector(length=length(ldf)) # the mean
-UCINode2<-vector(length=length(ldf)) # upper limit of Confidence Interval
-LCINode2<-vector(length=length(ldf)) # lower limit of CI
+MeanAncHomo<-vector(length=length(ldf)) # the mean
+UCIAncHomo<-vector(length=length(ldf)) # upper limit of Confidence Interval
+LCIAncHomo<-vector(length=length(ldf)) # lower limit of CI
+MeanAncHominini<-vector(length=length(ldf)) # the mean
+UCIAncHominini-vector(length=length(ldf)) # upper limit of Confidence Interval
+LCIAncHominini<-vector(length=length(ldf)) # lower limit of CI
 
 for (i in 1:length(ldf)){
-  MeanNode1[i]<-mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHominini...1)
-  UCINode1[i]<- mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHominini...1 )+ 2*sd(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHominini...1 )
-  LCINode1[i]<- mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHominini...1 )- 2*sd(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHominini...1 )
+  MeanAncHominini[i]<-mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHominini...1)
+  UCIAncHominini[i]<- mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHominini...1 )+ 2*sd(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHominini...1 )
+  LCIAncHominini[i]<- mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHominini...1 )- 2*sd(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHominini...1 )
 
-  MeanNode2[i]<-mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHomo...1 )
-  UCINode2[i]<- mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHomo...1 )+ 2*sd(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHomo...1 )
-  LCINode2[i]<- mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHomo...1 )- 2*sd(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHomo...1 )
+  MeanAncHomo[i]<-mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHomo...1 )
+  UCIAncHomo[i]<- mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHomo...1 )+ 2*sd(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHomo...1 )
+  LCIAncHomo[i]<- mean(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHomo...1 )- 2*sd(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHomo...1 )
   
   }
 
 ```
 
 
-### Combine AGER qualities and gene information into Summary file
+### Combine into Summary file
 ```{r Create summary file, echo=FALSE}
 ## combine gene information, divergence data, convergence data, and means and confidence intervals into one dataframe
-Summary<-cbind(genenames[1:length(ldf),], percent.divergent,foldSD,LCINode1,MeanNode1,UCINode1,LCINode2,MeanNode2,UCINode2)
+Summary<-cbind(genenames[1:length(ldf),], percent.divergent,foldSD,Itcorrelation,LCIAncHominini,MeanAncHominini,UCIAncHominini,LCIAncHomo,MeanAncHomo,UCIAncHomo)
+
+setwd(pathResults)
+
+## uploaded saved file 
+#Summary<-read.table("17-02-22SqrtAncReconResults.txt",sep='\t', header=T)
+
+## save data
+#write.table(Summary,"17-02-27LogAncReconResults.txt",sep='\t')
 
 head(Summary)
 
+## Save AncHomo reconstruction to fossilize and test fit of the model
+#AncHomo<-Summary$MeanAncHomo
+#write.table(t(AncHomo),"ReconsMeanAncHomo.txt",sep='\t')
+
 ```
 
-## Examine the divergence of the AGERs for all reconstructed expressed genes
+## Summarize transcriptomic evolution between two ancestral nodes
+
+### Examine the divergence of the AGERs for all reconstructed expressed genes
 
 ```{r percent divergences after eliminate failures and not expressed}
+## set cutoff for expression
+expcut<-sqrt(2)
 
-reconsgenes<-filter(Summary,foldSD<10,MeanNode1>2 | MeanNode2>2)
+reconsgenes<-filter(Summary,foldSD<10,MeanAncHominini>expcut | MeanAncHomo>expcut)
+#setwd(pathResults)
+#write.table(reconsgenes,"17-02-24Recons.txt",sep='\t')
 
 hist((reconsgenes$percent.divergent*100), #create histogram of percent divergence for tested genes
        main= "Percent Divergence in Posterior Probaility Distributions",#title
-       xlab="Percent Posterior Probability Divergence of Reconstructed Ancestral Transcriptional States", 
+       xlab="Percent Divergence", 
        ylab="Number of Genes", cex.lab=1.3,
        col="#800000", breaks=100)
 
+hist(reconsgenes$Itcorrelation)
+
 
 # define divergence cutoffs
-Summary$DivLevel <- cut(Summary$percent.divergent, c(0, .7, .8, .9, 1))
+reconsgenes$DivLevel <- cut(reconsgenes$percent.divergent, c(0, .7, .85, .95, 1))
 # Reverse the levels and generate some labels for the legend
-Summary$labels <- factor(Summary$DivLevel, levels = rev(levels(Summary$DivLevel)),
-                           labels = c('>90%', '80-90%',
-                                       '70-80%','<70%'))
+reconsgenes$labels <- factor(reconsgenes$DivLevel, levels = rev(levels(reconsgenes$DivLevel)),
+                           labels = c('>95%', '85-95%',
+                                       '70-85%','<70%'))
 ## split the data into layers
-df_layer_1 <- Summary[ Summary$labels =="<70%",]
-df_layer_70 <- Summary[ Summary$labels =="70-80%",]
-df_layer_80 <- Summary[ Summary$labels =="80-90%",]
-df_layer_90 <- Summary[ Summary$labels ==">90%",]
+df_layer_1 <- reconsgenes[ reconsgenes$labels =="<70%",]
+df_layer_70 <- reconsgenes[ reconsgenes$labels =="70-85%",]
+df_layer_85 <- reconsgenes[ reconsgenes$labels =="85-95%",]
+df_layer_95 <- reconsgenes[ reconsgenes$labels ==">95%",]
 
+## how any reconstructed genes fall into each of the percent divergence categories?
+layers_pop<-cbind(nrow(df_layer_1),nrow(df_layer_70),nrow(df_layer_85),nrow(df_layer_95))
+colnames(layers_pop)<-c('<70%','70-85%','85-95%','>95%')
+
+layers_pop
 
 # plot the mean AGERs by layer
-p<-ggplot(data=Summary, mapping=aes(x=(MeanNode1),y=(MeanNode2))) + 
+p<-ggplot(data=reconsgenes, mapping=aes(x=(MeanAncHomo),y=(MeanAncHominini))) + 
   theme_bw() +
   theme(plot.title= element_text(size=20, face="bold"), axis.title.x=element_text(size=20),axis.title.y=element_text(size=20)) +
-  #ggtitle("Ancestral Transcript Levels and\n Evidence for Evolution on the Human Lineage") +
-  labs( x="AncHominini TPM", y="AncHomo TPM", face="bold", size=20) +
+  #ggtitle("Ancestral Transcript Levels and\n Evidence for Expression Shift in the Human Lineage") +
+  labs( x="AncHominini sqrt(TPM)", y="AncHomo sqrt(TPM)", face="bold", size=20) +
   geom_point(data=df_layer_1, colour="#333333", alpha=0.3) +
-  geom_point(data=df_layer_70, colour="#c994c7", alpha=1) +
-  geom_point(data=df_layer_80, colour="#dd1c77", alpha=1) +
-  geom_point(data=df_layer_90, colour="#800000", alpha=1) +
+  geom_point(data=df_layer_70, colour="#c994c7", alpha=0.7) +
+  geom_point(data=df_layer_85, colour="#dd1c77", alpha=1) +
+  geom_point(data=df_layer_95, colour="#800000", alpha=1) +
   geom_abline(intercept=0,slope=1) + 
-  #scale_y_log10(limits=c(0.00001,10000)) + scale_x_log10(limits=c(0.00001,100000)) +
   scale_y_log10() + scale_x_log10() +
-  geom_vline(xintercept=sqrt(0.2), alpha=.5) + geom_hline(yintercept=sqrt(0.2), alpha=0.5)
+  geom_vline(xintercept=expcut, alpha=.5) + geom_hline(yintercept=expcut, alpha=0.5) 
 p
 
 ```
 
 
 
-## Identify genes that converged, are expressed, and have expression shifts
+### Identify genes that converged, are expressed, and have expression shifts
 
 **The method identified `r nrow(filter(Summary,percent.divergent>0.7,foldSD<10,MeanNode1>2 | MeanNode2>2))` genes with expression shifts in the human lineage.**
 
 ```{r ID expression shifts}
 
-shiftgenes<-filter(Summary,percent.divergent>0.7,foldSD<10,MeanNode1>2 | MeanNode2>2)
+shiftgenes<-filter(Summary,percent.divergent>0.85,foldSD<10,MeanAncHominini>expcut | MeanAncHomo>expcut)
+hist(shiftgenes$percent.divergent)
 
+
+hist(shiftgenes$Itcorrelation)
+viewMarginal(ldf,shiftgenes$gene_number)
+viewMarginal(ldf,c(6,6645))
+
+
+#boxplotPPDs(ldf,shiftgenes$gene_number)
 viewPPDs(ldf,shiftgenes$gene_number)
 
-boxplotPPDs(ldf,shiftgenes$gene_number)
+## to make with maroon and gray
+viewPPDsmaroon(ldf,6)
+
+plot(ldf[[6]]$Est.AncHomo...1, type="l", ylim=c(0,6), xlab="Sample", ylab="sqrt(TPM)", col="#737373")
+lines(ldf[[6]]$Est.AncHominini...1, col="#800000")
+lines(ldf[[6]]$Alpha.1, col="#d4b9da")
 
 
+
+## look at the genes identified by Brawand et al
+viewPPDs(ldf,c(3816,9933,9505,3647))
+
+## look at housekeeping genes
+housekeep<-c(182,342,355,1204,1667,1674,2347,2945,4355,4899,5092,6693,6645,7758,8704,9320,9518,9575,11677,12040)
+viewPPDs(ldf,housekeep)
+
+houskdf<-(Summary[housekeep,])
+hist(houskdf$percent.divergent)
+mean(houskdf$percent.divergent)
+
+viewPPDs(ldf,reconsgenes[reconsgenes$percent.divergent<.1,2])
 ``` 
 
