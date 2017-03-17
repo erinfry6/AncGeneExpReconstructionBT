@@ -9,7 +9,6 @@ They will:
 2) Identify genes with expression shifts in the lineage of interest by comparing the posterior probability distributions of the ancestral reconstructions
 
 
-#################################################################################
 
 ## Set up directories
 
@@ -30,7 +29,6 @@ BayesTraits Manual: http://www.evolution.rdg.ac.uk/BayesTraitsV2.0Files/TraitsV2
 
 *For this particular pipeline, I have a version of BayesTraits modified by Andrew Meade that allows for the specification of priors on ancestral nodes. This version is included in the this repository.*
 
-#################################################################################
 
 ## Input files Formats
 
@@ -41,7 +39,6 @@ The following input files are required for this analysis:
  - SampleTree.tree: SampleTree.tree is an ultrametric nexus formatted phylogeny formatted according to the BayesTraits Manual.
 
 
-#################################################################################
 
 ## Modify the scripts
 
@@ -55,12 +52,11 @@ The following input files are required for this analysis:
 
  - Modify Ancestral_Analysis.R the inputs of the DistDiv function in the for loop to include the two columns of the files with the reconstructed node names
 
-#################################################################################
 
 ## Run the Bayesian Ancestral Transcriptome Reconstruction Scripts
 
 
-#### 1) run_MCMC.sh - Run the MCMC chain under the specified evolutionary rate parameters relavent to gene expression. 
+#### 1) create_model_file.sh - Run the MCMC chain under the specified evolutionary rate parameters relavent to gene expression. 
 In our experience, incorporating both Kappa and Delta (see BayesTraits manual) decreases the variance of reconstructions and increases the log likelihood of the chain.
 
 ```
@@ -87,11 +83,11 @@ _All four inputs following the bash script should be the exact same as in step 1
 
 _Requires the R package 'dplyr'. Be sure to modify Ancestral_Analysis.R as instructed._
 
-#################################################################################
+
 
 ## Troubleshooting on test example files
 
 To run these scripts on the example test files, copy the files in scripts/test to the data directory and follow the above steps.
 
 ### written by Erin Fry
-### Last modified: February 1 2017
+### Last modified: March 17 2017
