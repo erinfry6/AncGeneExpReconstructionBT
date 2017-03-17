@@ -8,7 +8,7 @@ output:
     self_contained: false
 ---
 
-**This script simulates continuous character evolution on a phylogenetic Tree. Specifically, I will simulate gene expression evolution of 10,000 genes across the primate tree used in my ancestral gene expression reconstruction project.**
+**This script simulates continuous character evolution on a phylogenetic Tree. Specifically, I will simulate gene expression evolution of 10,000 genes across the primate tree used in my ancestral gene expression reconstruction (AGER) project.**
 
 ```{r setup, echo=FALSE, warning=FALSE}
 ## set paths and load packages
@@ -194,6 +194,24 @@ hist(log(apply(TPM[,-1],2,mean)), xlim=c(log(sqrt(2)),5), freq=F, ylim=c(0,1), x
 
 hist(log(apply(simreflection[,-1],2,mean)), add=T, border="blue", freq=F)
 
-
-
 ```
+
+
+## Save a .txt file of the simulated internal and extant nodes to test AGER
+```{r save simulated values}
+
+rownames(simreflection)<-c(as.character(TPM[,1]), "AncPrimate","AncOrangApe","AncApe","AncHominini","AncHomo","AncPan", "AncChimp","AncBonobo","AncGorilla","AncOrangutan")
+
+## save all simulated data points
+setwd(pathData)
+write.table(simreflection, "17-03-17Simulation.txt", sep="\t")
+
+## save file to run AGER pipeline, extant nodes only
+write.table(simreflection[1:19,], "sqrt_tpm_sims.txt", sep="\t")
+
+
+
+simreflection[1:19,1:2]
+```
+
+```{}
