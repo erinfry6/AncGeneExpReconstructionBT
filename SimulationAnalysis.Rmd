@@ -1,0 +1,271 @@
+---
+title: "Gene Expression Simulation Under Null Analysis"
+author: "Erin Fry"
+date: "April 12, 2017"
+output:
+  html_document:
+    toc: true
+    self_contained: false
+---
+
+**This script analyzes tha ancestral gene expression reconstructions from BayesTraits from two ancestral nodes to identify expression shifts. In this case, simulations were created one 'gene' at a time, samping from a normal distribution at each external node at random. Randomly drawing from a normal distribution should not provide evidence for expression shifts in any lineage, including the human lineage (or since the Human-Chimpanzee Common ancestor) which is tested here.The method that analyzed these simulations [can be found here](https://github.com/erinfry6/AncGeneExpReconstructionBT).**
+
+
+**Each simulation will be tested for divergent expression using two methods. The first calculates the percent divergence between two posterior probability distributions. The second, and preferred method, calculates what percentage of sampled iterations saw an increase or decrease in the human lineage. This will be referred to as the Bayesian Posterior Probablity of Divergence.**
+
+```{r set up paths and load libraries, warning=FALSE}
+## set paths to directories, be sure to modify your home directory and the Anccestral Reconstruction directory you are analyzing
+path="/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConstitiutive/BTReconstruct/"
+pathResults=paste(path,"resultsSim/",sep="")
+pathAncRecon=paste(pathResults,"AncRecon/",sep="")
+
+library(dplyr)
+library("ggplot2")
+```
+
+
+```{r Load AGER and gene information, echo=FALSE}
+setwd(pathAncRecon)
+options(stringsAsFactors = FALSE)
+ldf <- list() # creates a list
+listcsv<-paste("gene",as.character((order(dir(pattern = "*.txt")))),".txt", sep="")
+
+## for each gene, read into ldf collection of dataframes
+## but first set the total number of rows you expect to have in each file so the code will warn you if reconstructions failed
+expectedrows<-1001
+
+for (k in 1:length(listcsv)){ 
+  ldf[[k]]<- read.csv(listcsv[k], sep='\t') # read files in listcsv into the ldf list
+  if (nrow(ldf[[k]])!=expectedrows){
+    warning(paste("The reconstruction of gene number", k, "failed. Check file"))
+  }
+}
+
+```
+
+
+```{r set divergence and PPD plot functions, echo=FALSE}
+#The function DistDiv finds the frequency at which two distributions are different from one another
+#'dylpr' is a required package for this function
+#the first two arguments are the distributions of interest
+#the second is the number of bins you would like to divide the data into, default 100
+
+DistDiv<-function(dist1,dist2,nbin=100) {
+
+#first, define the bins each distribution will be broken up into
+  minimum=(min(dist1, dist2)) #minimum value of both distributions
+  maximum=(max(dist1, dist2)) #maximum value of both distributions
+  bins <- seq(minimum, maximum, by =(maximum-minimum)/nbin )  #create nbins from the minimum to maximum observed values
+
+#Create a data frame to contain the number of counts from each distribution in each bin
+  #the hist(plot=FALSE) function creates a list containing count information in each bin, speficied above
+  counts<-as.data.frame(cbind(hist(dist1, plot=FALSE, breaks=bins)$counts,hist(dist2, plot=FALSE, breaks=bins)$counts))
+  colnames(counts)<- c("Dist1Counts", "Dist2Counts") #set the column names
+  
+#find the number of overlapping counts across all bins
+  ##create new column containing the minimum count of the two distributions
+  ##this minimum count is equal to half of the overlap between the two in that bin
+  counts$overlap<-apply(counts[,1:2],1,min)  #Take the minimum count for each bin
+  
+  #multiple the overlap by two to equal the percent overlap between the two distributions
+  #then divide by the total number of observations to get the proportion overlap between the two distributions
+  return(1-(2*sum(counts$overlap))/sum(counts$Dist1Counts,counts$Dist2Counts))    }
+
+## for each sample, calculate the correlation between the two AGERs, use spearman because may not scale linearly
+calc_spearman<-function(recons,lastit=1000){
+  corr<-vector(length=length(recons)) #create empty vectors to contain percent divergence of each gene
+    for (i in 1:length(recons)){  #for each of these genes
+  gene<- recons[[i]][1:lastit,]  #create a new file for only that gene
+  corr[i]<-cor(gene$Est.AncHominini...1,gene$Est.AncHomo...1,method = "spearman")
+    } 
+  return(corr)}
+
+
+```
+
+## Identify converged reconstructions
+Genes that succesfully reconstructed will have similar posterior variations of the two ancestral node reconstructions. Thus, to eliminate successfully reconstructed genes, you calculate the fold difference in standard deivation between the two reconstructions.
+
+```{r check reconstruction success}
+## the HC ancestral reconstruction generally has a higher standard deviation. If it is too much larger than the ancHuman the chain failed to reconstruct
+
+## find the fold difference in standard deviation between the two reconstructions
+
+foldSD<-vector() ## empty vector to store results
+  for (i in 1:length(ldf)){
+foldSD[i]<-sd(ldf[[i]]$Est.AncHominini...1[1:1000])/sd(ldf[[i]]$Est.AncHomo...1[1:1000])
+  }
+
+## What proportion of genes succesfully reconstructed
+length(which(foldSD<10))/length(ldf)
+
+hist(log(foldSD), main="AGERs Difference in Standard Deviation", xlab="log fold change in standard deviation between the AncHomini and AncHomo AGERS")
+
+```
+
+**`r (length(which(foldSD<4))/length(ldf))*100`% of genes successfully reconstructed (with a cutoff of 4x standard deviation).**
+
+## Calculate divergence between the two reconstructions using two methods- Percent Divergence between the two Post Prob Distn's of Expression and by the Bayesian Posterior Probability of Divergence
+```{r calculate and examine gene expression divergence}
+
+percent.divergent<-vector(length=length(ldf)) #create empty vectors to contain percent divergence of each gene
+
+for (i in 1:length(ldf)){  #for each of these genes
+  gene<- ldf[[i]][-nrow(ldf[[i]]),]  #create a new file for only that gene
+  
+  #run the function distdiv for the human and H-C post prob distributions
+  percent.divergent[i]<-DistDiv(gene$Est.AncHomo...1, gene$Est.AncHominini...1)
+}
+
+
+## Calculate the Bayesian Posterior Probability of Divergence (define in introduction)
+BayesianPostProbofDivergence<-vector(length=length(ldf))
+
+for (i in 1:length(ldf)){  #for each of these genes
+  gene<- ldf[[i]][-nrow(ldf[[i]]),]  #create a new file for only that gene
+  diff<-gene$Est.AncHomo...1-gene$Est.AncHominini...1
+  
+  #find the proportion that are greater than 0
+  BayesianPostProbofDivergence[i]<-abs(max(1-(length(which(diff>0))/(expectedrows-1)), (length(which(diff>0))/(expectedrows-1))))
+}
+
+```
+
+## Calculate the Posterior Median of the distributions
+```{r Mean and Confidence interval for each gene MRCA}
+#find the mean of the ancestral estimations, and for fun, the lower and upper confidence intervals
+MedianAncHomo<-vector(length=length(ldf)) # the median of human
+MedianAncHominini<-vector(length=length(ldf)) # the median of HC
+
+for (i in 1:length(ldf)){
+  MedianAncHominini[i]<-median(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHominini...1)
+
+  MedianAncHomo[i]<-median(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHomo...1 )
+
+  }
+
+```
+
+
+### Combine into Summary file
+```{r Create summary file, echo=FALSE}
+## combine gene information, divergence data, convergence data, and means and confidence intervals into one dataframe
+Summary<-as.data.frame(cbind(percent.divergent,BayesianPostProbofDivergence,foldSD,MedianAncHominini,MedianAncHomo))
+
+head(Summary)
+
+#setwd(pathResults)
+
+## uploaded saved file 
+#Summary<-read.table("17-03-29SqrtSimAncReconResults.txt",sep='\t', header=T)
+
+## save data
+#write.table(Summary,"17-04-02SqrtSimAncReconResults.txt",sep='\t')
+
+
+```
+
+## Summarize transcriptomic evolution between two ancestral nodes
+
+### Examine the divergence of the AGERs for all reconstructed expressed genes
+
+```{r percent divergences after eliminate failures and not expressed}
+## set cutoff for expression
+expcut<-sqrt(2)
+
+## filter genes that did not converge
+reconsgenes<-filter(as.data.frame(Summary),foldSD<4,MedianAncHominini>expcut | MedianAncHomo>expcut)
+#setwd(pathResults)
+#write.table(reconsgenes,"17-02-24Recons.txt",sep='\t')
+
+## View the distribution of divergence of converged genes
+hist(reconsgenes$BayesianPostProbofDivergence, #create histogram of percent divergence for tested genes
+       main= "Transcriptome Divergence", #title
+       xlab="Bayesian Posterior Probability of Divergence", 
+       ylab="Number of Genes", cex.lab=1.3,
+       col="#1c9099", breaks=100)
+
+
+
+
+## first look at scatter plot of reconstructions by percent post prob divergence (the less preferred measure of divergence)
+# define divergence cutoffs
+reconsgenes$DivLevel <- cut(reconsgenes$percent.divergent, c(0, .7, .85, .95, 1))
+# Reverse the levels and generate some labels for the legend
+reconsgenes$labels <- factor(reconsgenes$DivLevel, levels = rev(levels(reconsgenes$DivLevel)),
+                           labels = c('>95%', '85-95%',
+                                       '70-85%','<70%'))
+## split the data into layers
+df_layer_1 <- reconsgenes[ reconsgenes$labels =="<70%",]
+df_layer_70 <- reconsgenes[ reconsgenes$labels =="70-85%",]
+df_layer_85 <- reconsgenes[ reconsgenes$labels =="85-95%",]
+df_layer_95 <- reconsgenes[ reconsgenes$labels ==">95%",]
+
+## how any reconstructed genes fall into each of the percent divergence categories?
+layers_pop<-cbind(nrow(df_layer_1),nrow(df_layer_70),nrow(df_layer_85),nrow(df_layer_95))
+colnames(layers_pop)<-c('<70%','70-85%','85-95%','>95%')
+
+layers_pop
+
+# plot the mean AGERs by layer
+p<-ggplot(data=reconsgenes, mapping=aes(x=(MedianAncHomo),y=(MedianAncHominini))) + 
+  theme_bw() +
+  theme(plot.title= element_text(size=20, face="bold"), axis.title.x=element_text(size=20),axis.title.y=element_text(size=20)) +
+  ggtitle("Ancestral Transcript Levels and\n AGERs Distribution Divergence Human Lineage") +
+  labs( x="AncHominini sqrt(TPM)", y="AncHomo sqrt(TPM)", face="bold", size=20) +
+  geom_point(data=df_layer_1, colour="#333333", alpha=0.3) +
+  geom_point(data=df_layer_70, colour="#c994c7", alpha=0.7) +
+  geom_point(data=df_layer_85, colour="#dd1c77", alpha=1) +
+  geom_point(data=df_layer_95, colour="#800000", alpha=1) +
+  geom_abline(intercept=0,slope=1) + 
+  scale_y_log10() + scale_x_log10() +
+  geom_vline(xintercept=expcut, alpha=.5) + geom_hline(yintercept=expcut, alpha=0.5) 
+p
+
+
+
+
+
+
+## next look at scatter plot of reconstructions by the Posterior Probability of Divergence (the preferred measure of divergence)
+# define divergence cutoffs
+reconsgenes$BPPDLevel <- cut(reconsgenes$BayesianPostProbofDivergence, c(0,0.90,0.95,0.99,1.1))
+
+BPPDcats<-reconsgenes %>% 
+  group_by(BPPDLevel) %>%
+  summarise(no_genes=length(BPPDLevel))
+BPPDcats
+
+
+# Reverse the levels and generate some labels for the legend
+reconsgenes$labels <- factor(reconsgenes$BPPDLevel, levels = rev(levels(reconsgenes$BPPDLevel)),
+                           labels = c('>99%', '95-99%',
+                                       '90-95%','<90%'))
+## split the data into layers
+df_layer_1 <- reconsgenes[ reconsgenes$labels =="<90%",]
+df_layer_90 <- reconsgenes[ reconsgenes$labels =="90-95%",]
+df_layer_95 <- reconsgenes[ reconsgenes$labels =="95-99%",]
+df_layer_99 <- reconsgenes[ reconsgenes$labels ==">99%",]
+
+
+
+
+p<-ggplot(data=reconsgenes, mapping=aes(x=(MedianAncHomo),y=(MedianAncHominini))) + 
+  theme_bw() +
+  theme(plot.title= element_text(size=20, face="bold"), axis.title.x=element_text(size=20),axis.title.y=element_text(size=20)) +
+  ggtitle("Ancestral Transcript Levels and\n by BBPD in the Human Lineage") +
+  labs( x="AncHominini sqrt(TPM)", y="AncHomo sqrt(TPM)", face="bold", size=20) +
+  geom_point(data=df_layer_1, colour="#ffffcc", alpha=1) +
+  geom_point(data=df_layer_90, colour="#a1dab4", alpha=1) +
+  geom_point(data=df_layer_95, colour="#41b6c4", alpha=1) +
+  geom_point(data=df_layer_99, colour="#0c2c84", alpha=1) +
+  geom_abline(intercept=0,slope=1) + 
+  scale_y_log10(limits=c(1e-1,1e3)) + scale_x_log10(limits=c(1e-1,1e3)) +
+  geom_vline(xintercept=expcut, alpha=.5) + geom_hline(yintercept=expcut, alpha=0.5) 
+p
+```
+
+**`r nrow(reconsgenes)-nrow(df_layer_1)` null simulations are identified to have expression shifts.**
+
+
+### EF 12 April 2017

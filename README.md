@@ -8,8 +8,6 @@ They will:
 
 2) Identify genes with expression shifts in the lineage of interest by comparing the posterior probability distributions of the ancestral reconstructions
 
-3) Simulate gene expression similar to your data. After simulations are created, one can rerun the analysis.
-
 ## Set up directories
 
 Before beginning, create a home directory for the pipeline that contains the following subdirectories
@@ -50,9 +48,6 @@ The following input files are required for this analysis:
 
  - To specify which ancestral nodes are reconstructed, modify `ancestral_reconstruction.sh`'s command section, which is at the bottom in the for loop. Follow the instructions in AGERinstructions.txt
 
- - Modify Ancestral_Analysis.R the inputs of the DistDiv function in the for loop to include the two columns of the files with the reconstructed node names
-
-
 ## Run the Bayesian Ancestral Transcriptome Reconstruction Scripts
 
 
@@ -75,13 +70,9 @@ In our experience, incorporating both Kappa and Delta (see BayesTraits manual) d
 _All four inputs following the bash script should be the exact same as in step 1._
 
 
-#### 3) ID_divergent_genes.sh - Calculates the percent divergence between the two posterior probability distributions of two ancestral states using `Ancestral_Analysis.R`
+#### 3) AGERAnalysis.Rmd - Analyzes Ancestral Transcriptome Reconstructions to identify genes with expression shifts. 
+I recommend using the Bayesian Posterior Probability of Divergence to identify genes with expression shifts.
 
-```
-./ID_divergent_genes.sh
-```
-
-_Requires the R package 'dplyr'. Be sure to modify Ancestral_Analysis.R as instructed._
 
 
 ## Simulate gene expression evolution across your tree.

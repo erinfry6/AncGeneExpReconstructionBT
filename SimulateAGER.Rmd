@@ -14,9 +14,8 @@ output:
 ## set paths and load packages
 path="/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConstitiutive/BTReconstruct/"
 pathData=paste(path,"data/",sep="")
-pathResults=paste(path,"results/",sep="")
-pathAncRecon=paste(pathResults,"AncRecon/",sep="")
-pathAncReconLimit=paste(pathResults,"AncReconLimit/",sep="")
+pathResults=paste(path,"resultsSim/",sep="")
+
 
 library("ape")
 library("ggplot2")
@@ -170,7 +169,7 @@ apos<-a[which(a>0)][1:nsimul]
 simulatevarietyofexp<-function(tree, rootvector, nsimul){
    simulationvar<-matrix(ncol=nsimul,nrow=(length(tree$edge.length)+1)) 
    for (i in 1:nsimul){
-     simulationvar[,i]<-fastBM(tree,rootvector[i], bounds=c(0,Inf), internal=TRUE,sig2=1)
+     simulationvar[,i]<-fastBM(tree,rootvector[i], bounds=c(0,Inf), internal=TRUE,sig2=abs(rnorm(1,mean=0.00001,sd=0.0001)))
   }
   return(simulationvar)
 }
@@ -214,4 +213,49 @@ write.table(simreflection[1:19,], "sqrt_tpm_sims.txt", sep="\t")
 simreflection[1:19,1:2]
 ```
 
-```{}
+## Instead null simulate end nodes
+```{r}
+## simulate 10000 genes with roots normally distributed by the mean and standard deviation of real data mean and standard deviation expression
+
+## set the number of genes to simulate
+nsimul=10000
+
+## draw a large set of average expression values, some will be negative. These numbers are drawn based on the mean expression of genes in our dataset
+a=rnorm(n=nsimul*10, mean=(median(apply(TPM[,-1],2,mean))), sd=(sd(apply(TPM[,-1],2,mean))))
+## choose only positive average values
+apos<-a[which(a>0)][1:nsimul]
+## same for standard deviation
+s=rnorm(n=nsimul*10, mean=1, sd=1)
+spos<-s[which(s>0)][1:nsimul]
+
+
+## simulate gene expression variation across the tree
+simulatevarietyofexp<-function(tree, average, standarddev, nsimul){
+   simulationvar<-matrix(ncol=nsimul,nrow=(length(tree$tip.label))) 
+   for (i in 1:nsimul){
+     simulationvar[,i]<-rnorm(n = (length(tree$tip.label)), mean = average[i], sd = standarddev )
+  }
+  return(simulationvar)
+}
+
+## Use the positive values based on our data to simulate expression data
+simreflection<-simulatevarietyofexp(MyTree, average = apos, standarddev=spos, nsimul = nsimul)
+## convert all negatives to 0
+simreflection[simreflection<0] <- 0
+
+## compare how similar my simulations meant to reflect the real data are to the real data
+summary(apply(simreflection[,-1],2,sd))
+summary(apply(TPM[,-1],2,sd))
+
+summary(apply(simreflection[,-1],2,mean))
+summary(apply(TPM[,-1],2,mean))
+
+rownames(simreflection)<-c(as.character(TPM[,1]))
+
+## save all simulated data points
+setwd(pathData)
+write.table(simreflection, "17-03-27Simulation.txt", sep="\t")
+
+## save file to run AGER pipeline, extant nodes only
+write.table(simreflection, "sqrt_tpm_sims.txt", sep="\t")
+```

@@ -10,7 +10,7 @@ export path=/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConst
 
 	export pathData=${path}/data
 	export pathScripts=${path}/scripts
-	export pathResults=${path}/resultsLog
+	export pathResults=${path}/resultsSim
 	export pathTemp=${pathResults}/temporary
 	export pathModelResults=${pathResults}/Model
 	export pathCommands=${pathScripts}/commands
@@ -68,6 +68,7 @@ AddTag Tag-PointA hsa_br_M_1 hsa_br_M_2 hsa_br_M_3 hsa_br_M_4 hsa_br_F_1
 AddTag Tag-PointB hsa_br_M_1 hsa_br_M_2 hsa_br_M_3 hsa_br_M_4 hsa_br_F_1 ptr_br_M_3 ptr_br_M_2 ptr_br_M_5 ptr_br_M_1 ptr_br_M_4 ptr_br_F_1 ppa_br_M_1 ppa_br_F_1 ppa_br_F_2 
 AddMRCA AncHomo Tag-PointA
 AddMRCA AncHominini Tag-PointB
+Prior AncState-1 uniform 0 15731
 Burnin 10000
 stones 100 10000
 Kappa
@@ -84,7 +85,7 @@ Delta' >> ${commandfile}
 	## copy the model file created in the first step and run BayesTraits again, informed by the model file to reconstruct ancestral transcriptional state
 	## copy the stepping stone output to save likelihood information about the chain
 
-for a in {2..3270}
+for a in {1001..3250}
 	do
 	
 	awk -v a="$a" '{print $1,$a}' ${pathData}/${Expressiondata} > ${singleexpression}

@@ -100,7 +100,7 @@ echo run >> ${commandfile}
 	## first, makes a temporary file to contain only gene expression from the one gene, then runs the MCMC chain exploring the evolution of each gene's expression
 	## it then copies the stepping stone sampler file and model file for future use to their appropriate folders
 
-for a in {2..10000}
+for a in {1001..3250}
 	do
 
 	awk -v a="$a" '{print $1,$a}' ${pathData}/${Expressiondata} > ${singleexpression}
