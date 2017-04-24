@@ -70,8 +70,13 @@ In our experience, incorporating both Kappa and Delta (see BayesTraits manual) d
 _All four inputs following the bash script should be the exact same as in step 1._
 
 
-#### 3) AGERAnalysis.Rmd - Analyzes Ancestral Transcriptome Reconstructions to identify genes with expression shifts. 
-I recommend using the Bayesian Posterior Probability of Divergence to identify genes with expression shifts.
+#### 3) Extract.AGER.SummaryStats.sh - Collect Summary statistics for the AGERs into one Summary file using Create.AGER.Summary.File.R .
+
+```
+./Extract.AGER.SummaryStat.sh
+```
+
+#### 4) AGERAnalysis.Rmd - Analyzes Ancestral Transcriptome Reconstructions to identify genes with expression shifts. Best used in R studio.
 
 
 

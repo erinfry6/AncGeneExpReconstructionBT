@@ -1,20 +1,20 @@
 ---
-title: "Analyze Ancestral Gene Expression Reconstructions (AGERs)"
+title: "Identifying Expression Shifts from Ancestral Gene Expression Reconstructions"
 author: "Erin Fry"
-date: "April 12, 2017"
+date: "April 24, 2017"
 output:
   html_document:
     toc: true
     self_contained: false
 ---
 
-**This script analyzes tha ancestral gene expression reconstructions from BayesTraits from two ancestral nodes to identify expression shifts. In this case, I aim to identify expressoin shifts in the human lineage (since the common ancestor of Humans and Chimpanzees) in the human frontal cortex. The data analyzed in this document were published by Brawand et al in 2011, collected from post-mortem frotal cortices of 6 primate species. This paper identified 4 genes with expression shifts in the human brain using maximum likelihood. The method that generated this data [can be found here](https://github.com/erinfry6/AncGeneExpReconstructionBT).**
+**This script analyzes the ancestral gene expression reconstructions (AGERs) generated in BayesTraits at two ancestral nodes to identify expression shifts. In this case, I aim to identify expression shifts in the human lineage (since the common ancestor of Humans and Chimpanzees) in the human frontal cortex. The data analyzed in this document were published by [Brawand et al in 2011](http://www.nature.com/nature/journal/v478/n7369/abs/nature10532.html), collected from post-mortem frotal cortices of 6 primate species. This paper identified 4 genes with expression shifts in the human brain using maximum likelihood. The method that generated this data [can be found here](https://github.com/erinfry6/AncGeneExpReconstructionBT).**
 
-**Each gene will be tested for divergent expression using two methods. The first calculates the percent divergence between two posterior probability distributions. The second, and preferred method, calculates what percentage of sampled iterations saw an increase or decrease in the human lineage. This will be referred to as the Bayesian Posterior Probablity of Divergence.**
+**Genes with expression shifts were identified using the Bayesian Posterior Probability of Divergence (BPPD), which calculates what percentage of sampled iterations saw an increase or decrease in expression in the human lineage.**
 
 ## Setup
-### load paths and libraries
-```{r set up paths and load libraries, warning=FALSE}
+###Load paths and libraries
+```{r set up paths and load libraries, warning=FALSE, message=FALSE}
 ## set paths to directories, be sure to modify your home directory and the Anccestral Reconstruction directory you are analyzing
 path="/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConstitiutive/BTReconstruct/"
 pathData=paste(path,"data/",sep="")
@@ -24,67 +24,29 @@ pathAncRecon=paste(pathResults,"AncRecon/",sep="")
 library(dplyr)
 library("ggplot2")
 library(gplots)
+library(plotly)
 ```
 
-```{r Load AGER and gene information, echo=FALSE}
+```{r Load AGERs list and gene information, echo=FALSE, cache=TRUE}
+## load the list of genes reconstructed from the results directory
 setwd(pathAncRecon)
 options(stringsAsFactors = FALSE)
-ldf <- list() # creates a list
 listcsv<-paste("gene",as.character((order(dir(pattern = "*.txt")))),".txt", sep="")
-
-## for each gene, read into ldf collection of dataframes
-## but first set the total number of rows you expect to have in each file so the code will warn you if reconstructions failed
-expectedrows<-1001
-
-for (k in 1:length(listcsv)){ 
-  ldf[[k]]<- read.csv(listcsv[k], sep='\t') # read files in listcsv into the ldf list
-  if (nrow(ldf[[k]])!=expectedrows){
-    warning(paste("The reconstruction of gene number", k, "failed. Check file"))
-  }
-}
 
 ## import the gene information to we can include them in our analysis
 setwd(path)
 genenames<-read.csv("GeneNamesandcodes.txt",header=T, sep='\t')
 
-
 ```
 
-### Write functions to be used throughout the analysis
+### Write functions to visualize expression divergence
 
 ```{r set divergence and PPD plot functions}
-#The function DistDiv finds the frequency at which two distributions are different from one another
-#'dylpr' is a required package for this function
-#the first two arguments are the distributions of interest
-#the second is the number of bins you would like to divide the data into, default 100
-
-DistDiv<-function(dist1,dist2,nbin=100) {
-
-#first, define the bins each distribution will be broken up into
-  minimum=(min(dist1, dist2)) #minimum value of both distributions
-  maximum=(max(dist1, dist2)) #maximum value of both distributions
-  bins <- seq(minimum, maximum, by =(maximum-minimum)/nbin )  #create nbins from the minimum to maximum observed values
-
-#Create a data frame to contain the number of counts from each distribution in each bin
-  #the hist(plot=FALSE) function creates a list containing count information in each bin, speficied above
-  counts<-as.data.frame(cbind(hist(dist1, plot=FALSE, breaks=bins)$counts,hist(dist2, plot=FALSE, breaks=bins)$counts))
-  colnames(counts)<- c("Dist1Counts", "Dist2Counts") #set the column names
-  
-#find the number of overlapping counts across all bins
-  ##create new column containing the minimum count of the two distributions
-  ##this minimum count is equal to half of the overlap between the two in that bin
-  counts$overlap<-apply(counts[,1:2],1,min)  #Take the minimum count for each bin
-  
-  #multiple the overlap by two to equal the percent overlap between the two distributions
-  #then divide by the total number of observations to get the proportion overlap between the two distributions
-  return(1-(2*sum(counts$overlap))/sum(counts$Dist1Counts,counts$Dist2Counts))    }
-
-
 ## view the AGERs for each gene in a list of genes, lastit (last iteration) is the number of iterations sampled in the chain
 
-viewPPDs<-function(recons,genelist,lastit=1000,nbins=100){
+viewPPDs<-function(genelist,lastit=1000,nbins=100){
   for (i in genelist){  #for each of these genes
-  gene<- recons[[i]][1:lastit,]  #create a new file for only that gene
+  gene<- read.csv(paste(pathAncRecon,listcsv[i], sep="/"), sep='\t')[1:lastit,] # read reconstruction
     minimum=(min(gene$Est.AncHomo...1, gene$Est.AncHominini...1)) #minimum estimated value
     maximum=(max(gene$Est.AncHomo...1, gene$Est.AncHominini...1)) #maximum estimated
     breakby= (maximum-minimum)/nbins  #size of bins
@@ -99,9 +61,9 @@ viewPPDs<-function(recons,genelist,lastit=1000,nbins=100){
   #legend(300,300, c("Human-Chimpanzee", "Human"), col=c("#7fbf7b", "#af8dc3"), lwd=10, border=NULL)
   } }
 
-viewPPDsmaroon<-function(recons,genelist,lastit=1000,nbins=100){
+viewPPDsmaroon<-function(genelist,lastit=1000,nbins=100){
   for (i in genelist){  #for each of these genes
-  gene<- recons[[i]][1:lastit,]  #create a new file for only that gene
+  gene<- read.csv(listcsv[i], sep='\t')[1:lastit,] # read reconstruction
     minimum=(min(gene$Est.AncHomo...1, gene$Est.AncHominini...1)) #minimum estimated value
     maximum=(max(gene$Est.AncHomo...1, gene$Est.AncHominini...1)) #maximum estimated
     breakby= (maximum-minimum)/nbins  #size of bins
@@ -120,9 +82,9 @@ viewPPDsmaroon<-function(recons,genelist,lastit=1000,nbins=100){
 
 ## view the AGERs for each gene in a list of genes, lastit (last iteration) is the number of iterations sampled in the chain
 
-viewDifference<-function(recons,genelist,lastit=1000,nbins=100){
+viewDifference<-function(genelist,lastit=1000,nbins=100){
   for (i in genelist){  #for each of these genes
-  gene<- recons[[i]][1:lastit,]  #create a new file for only that gene
+  gene<- read.csv(listcsv[i], sep='\t')[1:lastit,] # read reconstruction
   diffvector<-gene$Est.AncHomo...1-gene$Est.AncHominini...1
   hist(diffvector,
        main= paste("Gene #", i,"-", genenames[i,3],"-Post Prob Divergence:",abs(max(1-Summary$BayesianPostProbofDivergence[i], Summary$BayesianPostProbofDivergence[i]))),  #title of the image
@@ -134,107 +96,54 @@ viewDifference<-function(recons,genelist,lastit=1000,nbins=100){
 
 ```
 
-## Summarize the AGERs
-### Find AGERs with succesful reconstructions
+### Load and Examine the Results Summary file
+
+```{r Load summary file, echo=FALSE, tidy=TRUE}
+setwd(pathResults)
+
+## uploaded saved file 
+Summary<-read.table("17-03-28SqrtAncReconResults.txt",sep='\t', header=T)
+
+head(Summary)
+
+```
+
+### Select genes that are expressed with successful reconstructions
 Genes that succesfully reconstructed will have similar posterior variations of the two ancestral node reconstructions. Thus, to eliminate successfully reconstructed genes, you calculate the fold difference in standard deivation between the two reconstructions.
 
-```{r reconstruction success}
+```{r reconstruction success, warnings=FALSE}
 ## the HC ancestral reconstruction generally has a higher standard deviation. If it is too much larger than the ancHuman the chain failed to reconstruct
-
-## find the fold difference in standard deviation between the two reconstructions
-
-foldSD<-vector() ## empty vector to store results
-  for (i in 1:length(ldf)){
-foldSD[i]<-sd(ldf[[i]]$Est.AncHominini...1[1:1000])/sd(ldf[[i]]$Est.AncHomo...1[1:1000])
-  }
 
 ## define divergence fold standard deviation cutoff
 cutoffSD<-4
 
-## What proportion of genes succesfully reconstructed
-length(which(foldSD<cutoffSD))/length(ldf)
+hist(log(Summary$foldSD), main="Reconstruction Fold Difference in Standard Deviation", xlab="log fold change in standard deviation between the AncHomini and AncHomo AGERS")
+abline(v=cutoffSD, col="red")
 
-hist(log(foldSD), main="AGERs Difference in Standard Deviation", xlab="log fold change in standard deviation between the AncHomini and AncHomo AGERS")
-
-```
-
-**`r (length(which(foldSD<4))/length(ldf))*100`% of genes successfully reconstructed (with a cutoff of 4x standard deviation).**
-
-### Calculate divergence between the two reconstructions using two methods- Percent Divergence between the two Post Prob Distn's of Expression and by the Bayesian Posterior Probability of Divergence
-```{r calculate and examine gene expression divergence}
-
-percent.divergent<-vector(length=length(ldf)) #create empty vectors to contain percent divergence of each gene
-
-for (i in 1:length(ldf)){  #for each of these genes
-  gene<- ldf[[i]][-nrow(ldf[[i]]),]  #create a new file for only that gene
-  
-  #run the function distdiv for the human and H-C post prob distributions
-  percent.divergent[i]<-DistDiv(gene$Est.AncHomo...1, gene$Est.AncHominini...1)
-}
-
-
-## Calculate the Bayesian Posterior Probability of Divergence (define in introduction)
-BayesianPostProbofDivergence<-vector(length=length(ldf))
-
-for (i in 1:length(ldf)){  #for each of these genes
-  gene<- ldf[[i]][-nrow(ldf[[i]]),]  #create a new file for only that gene
-  diff<-gene$Est.AncHomo...1-gene$Est.AncHominini...1
-  
-  #find the proportion that are greater than 0
-  BayesianPostProbofDivergence[i]<-abs(max(1-(length(which(diff>0))/(expectedrows-1)), (length(which(diff>0))/(expectedrows-1))))
-}
-
-```
-
-### Calculate the Posterior Median of the distributions
-```{r Median post prob recons each gene}
-#find the mean of the ancestral estimations, and for fun, the lower and upper confidence intervals
-MedianAncHomo<-vector(length=length(ldf)) # the median of human
-MedianAncHominini<-vector(length=length(ldf)) # the median of HC
-
-for (i in 1:length(ldf)){
-  MedianAncHominini[i]<-median(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHominini...1)
-
-  MedianAncHomo[i]<-median(ldf[[i]][-nrow(ldf[[i]]),]$Est.AncHomo...1 )
-
-  }
-
-```
-
-
-### Combine into Summary file
-```{r Create summary files, echo=FALSE}
-## combine gene information, divergence data, convergence data, and means and confidence intervals into one dataframe
-Summary<-as.data.frame(cbind(genenames[1:length(ldf),], percent.divergent,BayesianPostProbofDivergence,foldSD,MedianAncHominini,MedianAncHomo))
-
-setwd(pathResults)
-
-## uploaded saved file 
-#Summary<-read.table("17-03-28SqrtAncReconResults.txt",sep='\t', header=T)
-
-## save data
-#write.table(Summary,"17-03-28SqrtSimAncReconResults.txt",sep='\t')
-
-head(Summary)
-
-## Save AncHomo reconstruction to fossilize and test fit of the model
-#AncHomo<-Summary$MeanAncHomo
-#write.table(t(AncHomo),"ReconsMeanAncHomo.txt",sep='\t')
-
-```
-
-## Describe expression evolution in the human lineage
-
-### Transcriptome-wide
-
-```{r transcriptome qualities of converged reconstructions}
-## set cutoff for expression
+## only select genes which are expressed, set cutoff for expression
+## 2 TPM is a standard expression cutoff
 expcut<-sqrt(2)
 
-## filter genes that did not converge
+## filter genes that did not converge or are not expressed in either reconstruction
 reconsgenes<-filter(as.data.frame(Summary),foldSD<cutoffSD,MedianAncHominini>expcut | MedianAncHomo>expcut)
-#setwd(pathResults)
-#write.table(reconsgenes,"17-02-24Recons.txt",sep='\t')
+
+```
+
+**`r (length(which(Summary$foldSD<cutoffSD))/nrow(Summary))*100`% of genes successfully reconstructed (with a cutoff of `r cutoffSD`x standard deviation fold change).**
+
+**`r nrow(reconsgenes)` genes successfully reconstructed and are expressed.**
+
+
+## Identify genes with expression shifts in the human lineage
+
+**I have chosen to use the Bayesian Posterior Probability of Divergence to identify genes with different expression levels in ancHuman and ancHuman-Chimpanzee nodes. We will use a BPPD of 90% as a cutoff.**
+
+```{r transcriptome qualities of converged reconstructions, echo=FALSE, warning=FALSE}
+## define the BPPD cutoff to call a gene to have an expression shift
+BPPDcutoff<-0.9
+
+## identify all expressed, converged genes with expression shifts
+shiftgenes<-filter(as.data.frame(Summary),BayesianPostProbofDivergence>BPPDcutoff,foldSD<cutoffSD,MedianAncHominini>expcut | MedianAncHomo>expcut)
 
 ## View the distribution of divergence of converged genes
 hist(reconsgenes$BayesianPostProbofDivergence, #create histogram of percent divergence for tested genes
@@ -242,48 +151,7 @@ hist(reconsgenes$BayesianPostProbofDivergence, #create histogram of percent dive
        xlab="Bayesian Posterior Probability of Divergence", 
        ylab="Number of Genes", cex.lab=1.3,
        col="#1c9099", breaks=100)
-
-
-
-
-## first look at scatter plot of reconstructions by percent post prob divergence (the less preferred measure of divergence)
-# define divergence cutoffs
-reconsgenes$DivLevel <- cut(reconsgenes$percent.divergent, c(0, .7, .85, .95, 1))
-# Reverse the levels and generate some labels for the legend
-reconsgenes$labels <- factor(reconsgenes$DivLevel, levels = rev(levels(reconsgenes$DivLevel)),
-                           labels = c('>95%', '85-95%',
-                                       '70-85%','<70%'))
-## split the data into layers
-df_layer_1 <- reconsgenes[ reconsgenes$labels =="<70%",]
-df_layer_70 <- reconsgenes[ reconsgenes$labels =="70-85%",]
-df_layer_85 <- reconsgenes[ reconsgenes$labels =="85-95%",]
-df_layer_95 <- reconsgenes[ reconsgenes$labels ==">95%",]
-
-## how any reconstructed genes fall into each of the percent divergence categories?
-layers_pop<-cbind(nrow(df_layer_1),nrow(df_layer_70),nrow(df_layer_85),nrow(df_layer_95))
-colnames(layers_pop)<-c('<70%','70-85%','85-95%','>95%')
-
-layers_pop
-
-# plot the mean AGERs by layer
-p<-ggplot(data=reconsgenes, mapping=aes(x=(MedianAncHomo),y=(MedianAncHominini))) + 
-  theme_bw() +
-  theme(plot.title= element_text(size=20, face="bold"), axis.title.x=element_text(size=20),axis.title.y=element_text(size=20)) +
-  ggtitle("Ancestral Transcript Levels and\n AGERs Distribution Divergence Human Lineage") +
-  labs( x="AncHominini sqrt(TPM)", y="AncHomo sqrt(TPM)", face="bold", size=20) +
-  geom_point(data=df_layer_1, colour="#333333", alpha=0.3) +
-  geom_point(data=df_layer_70, colour="#c994c7", alpha=0.7) +
-  geom_point(data=df_layer_85, colour="#dd1c77", alpha=1) +
-  geom_point(data=df_layer_95, colour="#800000", alpha=1) +
-  geom_abline(intercept=0,slope=1) + 
-  scale_y_log10() + scale_x_log10() +
-  geom_vline(xintercept=expcut, alpha=.5) + geom_hline(yintercept=expcut, alpha=0.5) 
-p
-
-
-
-
-
+abline(v=BPPDcutoff, col="red")
 
 ## next look at scatter plot of reconstructions by the Posterior Probability of Divergence (the preferred measure of divergence)
 # define divergence cutoffs
@@ -306,12 +174,10 @@ df_layer_95 <- reconsgenes[ reconsgenes$labels =="95-99%",]
 df_layer_99 <- reconsgenes[ reconsgenes$labels ==">99%",]
 
 
-
-
-p<-ggplot(data=reconsgenes, mapping=aes(x=(MedianAncHomo),y=(MedianAncHominini))) + 
+p<-ggplot(data=reconsgenes, mapping=aes(x=(MedianAncHomo),y=(MedianAncHominini), text=gene_name)) + 
   theme_bw() +
-  theme(plot.title= element_text(size=20, face="bold"), axis.title.x=element_text(size=20),axis.title.y=element_text(size=20)) +
-  ggtitle("Ancestral Transcript Levels and\n by BBPD in the Human Lineage") +
+  theme(plot.title= element_text(size=15, face="bold"), axis.title.x=element_text(size=20),axis.title.y=element_text(size=20)) +
+  ggtitle("Ancestral Transcript Levels and by BBPD in the Human Lineage") +
   labs( x="AncHominini sqrt(TPM)", y="AncHomo sqrt(TPM)", face="bold", size=20) +
   geom_point(data=df_layer_1, colour="#ffffcc", alpha=1) +
   geom_point(data=df_layer_90, colour="#a1dab4", alpha=1) +
@@ -321,107 +187,92 @@ p<-ggplot(data=reconsgenes, mapping=aes(x=(MedianAncHomo),y=(MedianAncHominini))
   scale_y_log10(limits=c(1e-1,1e3)) + scale_x_log10(limits=c(1e-1,1e3)) +
   geom_vline(xintercept=expcut, alpha=.5) + geom_hline(yintercept=expcut, alpha=0.5) 
 p
+
+#ggplotly(p)
 ```
 
+**`r nrow(shiftgenes)` were identified to have expression shifts in the human lineage with a Bayesian Posterior Probability of Divergence of 90% of greater.**
 
 
-### By examining reconstructions of genes that converged, are expressed, and have expression shifts
+## Examine the ancestral gene expression reconstructions
 
-**I have chosen to use the Bayesian Posterior Probability of Divergence to identify genes with different expression levels in ancHuman and ancHuman-Chimpanzee nodes. These divergences will be represented two ways.**
+To visiualize expression shifts, one can view the posterior probability divergences of the ancHuman (teal) and ancHC (gray).
 
-**1) showing the ancHuman (teal) and ancHC (gray) posterior probabilty of divergences to show the expression levels sampled by the MCMC for each.**
-
-**2) showing the posterior probability distribution of the difference between the two reconstructions**
-
-**First examine genes identified to have diverged in Brawand et al. Then look to the housekeeping genes, which should see no expression shift. Lastly, examine the divergence of genes identified to have expression shifts.**
+### Of genes identified to have an expression shift in Brawand et al
 
 ```{r ID expression shifts and see how fits expectations}
 
-shiftgenes<-filter(as.data.frame(Summary),BayesianPostProbofDivergence>0.9,foldSD<cutoffSD,MedianAncHominini>expcut | MedianAncHomo>expcut)
-
 ## examine the divergence of genes identified by Brawand et al
-viewPPDs(ldf,c(3816,9933,9505,3647))
-viewDifference(ldf,c(3816,9933,9505,3647) )
+viewPPDs(c(3816,9933,9505,3647))
 
+```
+
+
+All 4 genes identified by Brawand et al were identified using our method. 
+
+
+### Of housekeeping genes
+
+We do not expect expression shifts in housekeeping genes.
+
+```{r}
 ## examine housekeeping gene divergence
 ## these are some housekeeping genes
 housekeep<-c(182,342,355,1204,1667,1674,2347,2945,4355,4899,5092,6693,6645,7758,8704,9320,9518,9575,11677,12040)
-viewPPDs(ldf,housekeep)
-viewDifference(ldf,housekeep)
+viewPPDs(housekeep[2])
 
 ## what is the distribution of divergences of the housekeeping gene sample
 houskdf<-(Summary[housekeep,])
 hist(houskdf$BayesianPostProbofDivergence, breaks = 100)
 mean(houskdf$BayesianPostProbofDivergence)
 
-viewPPDs(ldf,shiftgenes$gene_number)
+```
+**`r length(which(Summary[housekeep,]$BayesianPostProbofDivergence>0.9))` Housekeeping genes of `r length(housekeep)` tested were identified to have expression shifts.**
+
+
+### Of newly identified genes with expression shifts using out method
+
+```{r}
+## view PPDs of genes identified with expression shifts
+viewPPDs(shiftgenes$gene_number[1:10])
 
 ``` 
 
-**`r length(which(Summary[housekeep,]$BayesianPostProbofDivergence>0.9))` Housekeeping genes of `r length(housekeep)` tested were identified to have expression shifts.**
 
-**`r length(shiftgenes)` were identified to have expression shifts in the human lineage with a Bayesian Posterior Probability of Divergence of 90% of greater.**
+## View original gene expression heatmaps of genes with expression shifts compared to one of all reconstructed genes
 
+These heatmaps are generated using the original expression data in all sampled primate frontal cortices. The first, of all reconstructed genes, does not elucidate any obvious patterns. The second, of all genes with expression shifts, shows clusters of genes with specific patterns. The most notable of which is either increased or decreased expression in humans compared to all other species.
 
-## Do identified expression shifts make sense based on orginal expression data?
-###Examine the expression data of genes identified to have expression shifts
-
-**See if any genes identified to have expressoin shifts seem falsely identified using a basic Wilcox test of human v non human primates.**
-```{r load original expression data and find questionable identified shifts, warning=FALSE}
-## load original RNA seq data that was analyzed
-setwd(pathData)
-RNA_seq_data<-read.table("TPM_sqrt.txt",header=F,sep='\t')
-## move over the row names for each sample
-rownames(RNA_seq_data)<-RNA_seq_data[,1]
-RNA_seq_data<-t(RNA_seq_data[,-1])
-## because of the code, gene 1 is the same as gene 2, so copy column 2 to column 1
-## also combine with gene information
-RNA_seq_data_df<-(cbind( select(Summary, Gene_ID, gene_number, gene_name, BayesianPostProbofDivergence), (rbind(RNA_seq_data[1,], RNA_seq_data))))
-
-## select just genes identified to have an expressoin shift
-RNA_seq_data_shift<-filter(RNA_seq_data_df, gene_number %in% shiftgenes$gene_number)
-
-wilcox<-vector()
-for (i in 1:nrow(RNA_seq_data_shift)){
-wilcox[i]<-wilcox.test(as.numeric(RNA_seq_data_shift[i,5:9]), as.numeric(RNA_seq_data_shift[i,10:23]))$p.value
-}
-
-questionable<-RNA_seq_data_shift$gene_number[which(wilcox>0.05)]
-
-#for (i in 1:length(questionable)){
- # boxplot(as.numeric(RNA_seq_data_df[questionable[i],5:9]), as.numeric(RNA_seq_data_df[questionable[i],10:15]), as.numeric(RNA_seq_data_df[questionable[i],16:18]), as.numeric(RNA_seq_data_df[questionable[i],19:20]), as.numeric(RNA_seq_data_df[questionable[i],21:23]), 
-  #      names= c("Human","Chimp","Bonobo","Gorilla","Orangutan"),
-   #     main=paste("Gene", RNA_seq_data_df$gene_number[questionable[i]]))
-  
-#}
-```
-**There are `r length(questionable)` genes that were falsesly identified to have expression shifts in the human lineage of `r nrow(shiftgenes)`.**
-
-
-### Heatmaps of genes with expression shifts compared to all reconstructed genes
-
-**Examine qualities of genes identified to have shifts in the original data.**
 ```{r examine qualities of genes identified to have shifts in the original data, echo=FALSE}
-heat_RNA<-RNA_seq_data_shift  %>% arrange(desc(BayesianPostProbofDivergence))
-heat_RNA<-as.matrix(heat_RNA[,5:23])
+## load expression data used to run scripts
+setwd(pathData)
+TPM_sqrt<-t(read.table("TPM_sqrt.txt",header=F))
+colnames(TPM_sqrt)<-TPM_sqrt[1,]
+TPM_sqrt<-TPM_sqrt[-1,]
+## to get it in the right format, save and reload
+write.table(TPM_sqrt, "temp.txt")
+temp<-as.matrix(read.table("temp.txt",header=T))
+## select only converged genes to create heatmap
+converged_expression<-temp[(reconsgenes$gene_number-1),]
 
-
+## load species color indicator
 categoricalData=c("hsa.br.F.1"="blue", "hsa.br.M.1"="blue", "hsa.br.M.2"="blue", "hsa.br.M.3"="blue", "hsa.br.M.4"="blue", "ptr.br.F.1"="#56B4E9","ptr.br.M.1"="#56B4E9", "ptr.br.M.2"="#56B4E9", "ptr.br.M.3"="#56B4E9", "ptr.br.M.4"="#56B4E9", "ptr.br.M.5"="#56B4E9","ppa.br.F.1"="#999999", "ppa.br.F.2"="#999999","ppa.br.M.1"="#999999","ggo.br.F.1"="#0072B2", "ggo.br.M.1"="#0072B2","ppy.br.F.1"="orange", "ppy.br.M.1"="orange","mml.br.M.2"="red")
 
-heatmap.2(heat_RNA, col=bluered(75),
+heatmap.2(converged_expression, col=bluered(75),
           density.info="none", trace="none", 
           dendrogram="row", scale="row",
           Rowv=T, Colv=F,colsep = 1:74, 
           sepcolor="black", 
           sepwidth=c(0.0000000001,0.000000001),
-          labRow="", labCol="", ColSideColors = categoricalData, main="Expression of all Genes with Expression Shifts \n Human    Chimp    Bonobo    Gorilla   Orang   Mac")
+          labRow="", labCol="", ColSideColors = categoricalData, main="Expression of Reconstructed Genes \n Human    Chimp    Bonobo    Gorilla   Orang   Mac")
 
-RNA_seq_data_recons<-filter(RNA_seq_data_df, gene_number %in% reconsgenes$gene_number)
 
-heat_RNA_recons<-RNA_seq_data_recons  %>% arrange(desc(BayesianPostProbofDivergence))
-heat_RNA_recons<-as.matrix(heat_RNA_recons[,5:23])
 
-heatmap.2(heat_RNA_recons, col=bluered(75),
+## select only genes identified to have expression shifts
+
+shift_expression<-temp[(shiftgenes$gene_number-1),]
+
+heatmap.2(shift_expression, col=bluered(75),
           density.info="none", trace="none", 
           dendrogram="row", scale="row",
           Rowv=T, Colv=F,colsep = 1:74, 

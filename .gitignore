@@ -20,3 +20,7 @@ ancestral_reconstruction_betterlimit.sh
 *_files*
 17-02-27TransofrmationCompare.html
 17-02-22SQRTAGERAnalysis.html
+*.html
+AGERAnalysisOld.Rmd
+MethodCompare.Rmd
+*cache/*
