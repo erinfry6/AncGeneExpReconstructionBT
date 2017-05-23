@@ -102,7 +102,7 @@ viewDifference<-function(genelist,lastit=1000,nbins=100){
 setwd(pathResults)
 
 ## uploaded saved file 
-Summary<-read.table("17-03-28SqrtAncReconResults.txt",sep='\t', header=T)
+Summary<-read.table("AGERSummary.txt",sep='\t', header=T)
 
 head(Summary)
 
@@ -221,16 +221,15 @@ We do not expect expression shifts in housekeeping genes.
 housekeep<-c(182,342,355,1204,1667,1674,2347,2945,4355,4899,5092,6693,6645,7758,8704,9320,9518,9575,11677,12040)
 viewPPDs(housekeep[2])
 
-## what is the distribution of divergences of the housekeeping gene sample
+## what is the distribution of divergences of the housekeeping genes in this list
 houskdf<-(Summary[housekeep,])
-hist(houskdf$BayesianPostProbofDivergence, breaks = 100)
-mean(houskdf$BayesianPostProbofDivergence)
+hist(houskdf$BayesianPostProbofDivergence, breaks = 100, main="Distribution of Divergence of Housekeeping Genes")
 
 ```
-**`r length(which(Summary[housekeep,]$BayesianPostProbofDivergence>0.9))` Housekeeping genes of `r length(housekeep)` tested were identified to have expression shifts.**
+**`r length(which(Summary[housekeep,]$BayesianPostProbofDivergence>0.9))` Housekeeping genes of `r length(housekeep)` tested were identified to have expression shifts, with a mean of `r mean(houskdf$BayesianPostProbofDivergence)` BPPD.**
 
 
-### Of newly identified genes with expression shifts using out method
+### Of newly identified genes with expression shifts using our method
 
 ```{r}
 ## view PPDs of genes identified with expression shifts
@@ -241,7 +240,7 @@ viewPPDs(shiftgenes$gene_number[1:10])
 
 ## View original gene expression heatmaps of genes with expression shifts compared to one of all reconstructed genes
 
-These heatmaps are generated using the original expression data in all sampled primate frontal cortices. The first, of all reconstructed genes, does not elucidate any obvious patterns. The second, of all genes with expression shifts, shows clusters of genes with specific patterns. The most notable of which is either increased or decreased expression in humans compared to all other species.
+These heatmaps are generated using the expression data in all sampled primate frontal cortices. The first, of all reconstructed genes, does not elucidate any obvious patterns. The second, of all genes with expression shifts, shows clusters of genes with specific patterns. The most notable of which is either increased or decreased expression in humans compared to all other species.
 
 ```{r examine qualities of genes identified to have shifts in the original data, echo=FALSE}
 ## load expression data used to run scripts
@@ -281,7 +280,4 @@ heatmap.2(shift_expression, col=bluered(75),
           labRow="", labCol="", ColSideColors = categoricalData, main="Expression of all Genes with Expression Shifts \n Human    Chimp    Bonobo    Gorilla   Orang   Mac")
 
 ```
-
-
-
 
