@@ -10,9 +10,9 @@ export path=/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConst
 
 	export pathData=${path}/data
 	export pathScripts=${path}/scripts
-	export pathResults=${path}/resultsSim
+	export pathResults=${path}/resultsFour
 	export pathTemp=${pathResults}/temporary
-	export pathModelResults=${pathResults}/Model
+	export pathModelResults=${pathResults}/Models
 	export pathCommands=${pathScripts}/commands
 	export pathSSSResults=${pathResults}/ARSSS
 	export pathRecon=${pathResults}/AncRecon
@@ -49,16 +49,17 @@ export path=/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConst
 export scriptversion=1  ## modify this if running multiple files at once
 	export singleexpression=${pathTemp}/singlegene$scriptversion.txt
 	export MCMC=${pathTemp}/MCMC$scriptversion.txt
+	export commandfiletemplate=${pathCommands}/step2commandtemplate$scriptversion.txt
 	export commandfile=${pathCommands}/step2command$scriptversion.txt
-
+	
 ###########################################################
 
 ## CREATING COMMAND FILES
 
 	## creates the command files to use or not use each evolutionary rate parameter
 
-	echo $command1 > ${commandfile}
-	echo $command2 >> ${commandfile}
+	echo $command1 > ${commandfiletemplate}
+	echo $command2 >> ${commandfiletemplate}
 
 ## specifies how many iterations, the burnin period, and the number of stones to sample
 ## it is important to read AGERinstructions.txt and the BayesTraits manual and modify the label and node numbers to specify which ancestral node to reconstruct
@@ -70,28 +71,57 @@ AddMRCA AncHomo Tag-PointA
 AddMRCA AncHominini Tag-PointB
 Prior AncState-1 uniform 0 15731
 Burnin 10000
-stones 100 10000
-Kappa
-Delta' >> ${commandfile}
-	echo LoadModels ${pathTemp}/model$scriptversion.bin >> ${commandfile}
-	echo run >> ${commandfile}
+stones 100 10000' >> ${commandfiletemplate}
+echo LoadModels ${pathTemp}/model$scriptversion.bin >> ${commandfiletemplate}
 
 
 ###########################################################
 
 ## for loop goes through each of the genes specified in { .. }
-
+## choice of 1=Kappa, 2= KD, 3=Delta, 4=none
+	## load in the model choice
 	## make a temporary file to contain only gene expression from the one gene
 	## copy the model file created in the first step and run BayesTraits again, informed by the model file to reconstruct ancestral transcriptional state
 	## copy the stepping stone output to save likelihood information about the chain
 
-for a in {1001..3250}
+for a in {2..10}
 	do
+	
+	choice=$(awk -v a="$a" '{print $a}' ${pathResults}/modelchoice.txt)
 	
 	awk -v a="$a" '{print $1,$a}' ${pathData}/${Expressiondata} > ${singleexpression}
 	
-	cp ${pathModelResults}/gene$a.bin ${pathTemp}/model$scriptversion.bin
-	./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${singleexpression} <${commandfile} | awk 'NR >=93' > ${pathRecon}/gene$a.txt
+	cp ${commandfiletemplate} ${commandfile}
+	
+	if [[ $choice == 4 ]]; then
+		echo run >> ${commandfile}
+	
+		cp ${pathModelResults}/none/gene$a.bin ${pathTemp}/model$scriptversion.bin
+		./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${singleexpression} <${commandfile} | awk 'NR >=1' > ${pathRecon}/gene$a.txt
+	
+
+	elif [[ $choice == 3 ]]; then
+		echo 'delta
+		run' >> ${commandfile}
+	
+		cp ${pathModelResults}/delta/gene$a.bin ${pathTemp}/model$scriptversion.bin
+		./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${singleexpression} <${commandfile} | awk 'NR >=1' > ${pathRecon}/gene$a.txt
+	
+	elif [[ $choice == 2 ]]; then
+		echo 'kappa
+		delta
+		run' >> ${commandfile}
+	
+		cp ${pathModelResults}/kd/gene$a.bin ${pathTemp}/model$scriptversion.bin
+		./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${singleexpression} <${commandfile} | awk 'NR >=1' > ${pathRecon}/gene$a.txt
+	
+	else 
+		echo 'kappa
+		run' >> ${commandfile}
+	
+		cp ${pathModelResults}/kappa/gene$a.bin ${pathTemp}/model$scriptversion.bin
+		./../BayesTraitsV2/BayesTraitsV2 ${pathData}/${tree} ${singleexpression} <${commandfile} | awk 'NR >=1' > ${pathRecon}/gene$a.txt
+	
 	cp ${singleexpression}.log.txt.Stones.txt ${pathSSSResults}/gene$a.txt
 
 	done

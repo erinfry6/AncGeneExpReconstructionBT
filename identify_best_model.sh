@@ -9,7 +9,7 @@ export path=/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConst
 	
 	export pathData=${path}/data
 	export pathScripts=${path}/scripts
-	export pathResults=${path}/resultsSQRT
+	export pathResults=${path}/resultsFour
 	export pathTemporary=${pathResults}/temporary
 	export pathCommands=${pathScripts}/commands
 
@@ -17,10 +17,31 @@ export path=/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConst
 
 	## for the following code to work, you must have a gene 1. for me this is a duplicate of gene #2
 
-	if [ -e ${pathResults}/AncRecon/gene1.txt ]; then
+	if [ -e ${pathResults}/SSS/kappa/gene1.txt ]; then
    	echo 'already here'
     else
-    cp -r ${pathResults}/AncRecon/gene2.txt ${pathResults}/AncRecon/gene1.txt
+    cp -r ${pathResults}/SSS/kappa/gene2.txt ${pathResults}/SSS/kappa/gene1.txt
+    fi
+
+
+if [ -e ${pathResults}/SSS/delta/gene1.txt ]; then
+   	echo 'already here'
+    else
+    cp -r ${pathResults}/SSS/delta/gene2.txt ${pathResults}/SSS/delta/gene1.txt
+    fi
+    
+    
+    if [ -e ${pathResults}/SSS/kd/gene1.txt ]; then
+   	echo 'already here'
+    else
+    cp -r ${pathResults}/SSS/kd/gene2.txt ${pathResults}/SSS/kd/gene1.txt
+    fi
+    
+    
+    if [ -e ${pathResults}/SSS/none/gene1.txt ]; then
+   	echo 'already here'
+    else
+    cp -r ${pathResults}/SSS/none/gene2.txt ${pathResults}/SSS/none/gene1.txt
     fi
 
 
@@ -28,6 +49,7 @@ export path=/Users/lynchlab/Desktop/ErinFry/ReconAncNeoTranscriptomes/BrainConst
 
 	## Extract reconstruction information using 'Create.AGER.Summary.File.R'
 	
-	R --vanilla <Create.AGER.Summary.File.R 
-
-
+	R --vanilla <ID.best.model.R
+	
+	
+echo created model choice file in ${pathResults} directory

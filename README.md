@@ -23,7 +23,7 @@ Before beginning, create a home directory for the pipeline that contains the fol
 				
 Place the contents of this repository in the scripts folder, except for the BayesTraitsV2. Place this in the home/BayesTraitsV2 folder.
 
-BayesTraits Manual: http://www.evolution.rdg.ac.uk/BayesTraitsV2.0Files/TraitsV2Manual.pdf
+[BayesTraits Manual](http://www.evolution.rdg.ac.uk/BayesTraitsV2.0Files/TraitsV2Manual.pdf)
 
 *For this particular pipeline, I have a version of BayesTraits modified by Andrew Meade that allows for the specification of priors on ancestral nodes. This version is included in the this repository.*
 
@@ -51,18 +51,26 @@ The following input files are required for this analysis:
 ## Run the Bayesian Ancestral Transcriptome Reconstruction Scripts
 
 
-#### 1) create_model_file.sh - Run the MCMC chain under the specified evolutionary rate parameters relavent to gene expression. 
+#### 1) create_model_files.sh - Run the MCMC chain under 4 models (without tree transformation parameters, with kappa, with delta, and with both kappa and delta).
 In our experience, incorporating both Kappa and Delta (see BayesTraits manual) decreases the variance of reconstructions and increases the log likelihood of the chain.
 
 ```
-./run_MCMC.sh Expression_Data.txt SampleTree.tree 4 2
+./create_model_files.sh Expression_Data.txt SampleTree.tree 4 2
 ```
    
 4 (continuous walk) and 2 (MCMC) are the two commands necessary to run BayesTraits random walk MCMC algorithm
 
 
-#### 2) ancestral_reconstruction.sh - Reconstructs the posterior probability distribution of ancestral states at specified internal nodes using the best model for the gene's evolution. 
+#### 2) identify_best_model.sh - Identify the model with the largest log marginal likelihood. Saves model choice in the results as modelchoice.txt
+
+```
+./identify_best_model.sh 
+```
+
+
+#### 3) ancestral_reconstruction.sh - Reconstructs the posterior probability distribution of ancestral states at specified internal nodes using the best model for the gene's evolution. 
    These nodes must be specified in the CREATING COMMAND FILES section. See BayesTraits Manual for instructions.
+
 ```
 ./ancestral_reconstruction.sh Expression_Data.txt SampleTree.tree 4 2
 ```
@@ -70,13 +78,13 @@ In our experience, incorporating both Kappa and Delta (see BayesTraits manual) d
 _All four inputs following the bash script should be the exact same as in step 1._
 
 
-#### 3) Extract.AGER.SummaryStats.sh - Collect Summary statistics for the AGERs into one Summary file using Create.AGER.Summary.File.R .
+#### 4) Extract.AGER.SummaryStats.sh - Collect Summary statistics for the AGERs into one Summary file using Create.AGER.Summary.File.R .
 
 ```
 ./Extract.AGER.SummaryStat.sh
 ```
 
-#### 4) AGERAnalysis.Rmd - Analyzes Ancestral Transcriptome Reconstructions to identify genes with expression shifts. Best used in R studio.
+#### 5) AGERAnalysis.Rmd - Analyzes Ancestral Transcriptome Reconstructions to identify genes with expression shifts. Best used in R studio.
 
 
 
@@ -90,4 +98,4 @@ _All four inputs following the bash script should be the exact same as in step 1
 To run these scripts on the example test files, copy the files in scripts/test to the data directory and follow the above steps.
 
 ### written by Erin Fry
-### Last modified: March 17 2017
+### Last modified: April 24 2017

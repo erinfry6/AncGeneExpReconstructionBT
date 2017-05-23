@@ -33,7 +33,6 @@ genenames<-read.csv("GeneNamesandcodes.txt",header=T, sep='\t')
 
 ### Write dist div function
 
-{r set divergence and PPD plot functions}
 #The function DistDiv finds the frequency at which two distributions are different from one another
 #'dylpr' is a required package for this function
 #the first two arguments are the distributions of interest
